@@ -1,0 +1,432 @@
+! Enhanced LEAF Configuration for {{ device_name }}
+! Device Type: {{ device_os.upper() }} - Cloud Availability Zone  
+! Management IP: {{ mgmt_ip }}
+! Generated: {{ ansible_date_time.iso8601 if ansible_date_time is defined else "Static" }}
+!
+!==============================================================================
+! BASIC SYSTEM CONFIGURATION
+!==============================================================================
+!
+hostname {{ device_name }}
+!
+service timestamps debug datetime msec localtime show-timezone
+service timestamps log datetime msec localtime show-timezone
+service password-encryption
+service compress-config
+!
+! Enable IPv6 unicast routing if needed
+ip routing
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+! Domain and hostname resolution
+ip domain name cloudaz.lab
+ip name-server 192.168.100.103
+ip name-server 192.168.100.104
+!
+! Disable unnecessary services
+no ip http server
+no ip http secure-server
+no cdp run
+lldp run
+!
+!==============================================================================
+! SPANNING TREE CONFIGURATION
+!==============================================================================
+!
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+spanning-tree vlan 100-399 priority 32768
+spanning-tree portfast bpduguard default
+spanning-tree loopguard default
+spanning-tree uplinkfast
+spanning-tree backbonefast
+!
+
+!==============================================================================
+! VLAN CONFIGURATION
+!==============================================================================
+!
+{% if vlans is defined %}
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+ name {{ vlan.name }}
+!
+{% endfor %}
+{% endif %}
+
+!==============================================================================
+! INTERFACE CONFIGURATION  
+!==============================================================================
+!
+{% for interface in interfaces %}
+interface {{ interface.name }}
+ description {{ interface.description | default('') }}
+ {% if interface.switchport is defined and not interface.switchport %}
+ no switchport
+ ip address {{ interface.ip }}
+ no shutdown
+ {% if interface.ospf_area is defined and interface.ospf_process is defined %}
+ ip ospf {{ interface.ospf_process }} area {{ interface.ospf_area }}
+ {% endif %}
+ {% if interface.bfd is defined %}
+ bfd interval {{ interface.bfd.interval }} min_rx {{ interface.bfd.min_rx }} multiplier {{ interface.bfd.multiplier }}
+ ip ospf bfd
+ {% endif %}
+ {% else %}
+ switchport
+ {% if interface.mode is defined %}
+ switchport mode {{ interface.mode }}
+ {% endif %}
+ {% if interface.vlan is defined %}
+ switchport access vlan {{ interface.vlan }}
+ {% endif %}
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ {% endif %}
+ no shutdown
+!
+{% endfor %}
+
+!==============================================================================
+! LOOPBACK INTERFACE
+!==============================================================================
+!
+interface Loopback0
+ description Router-ID and BGP Update Source
+ ip address {{ loopback.ip }}
+ {% if ospf is defined %}
+ ip ospf {{ ospf.process_id }} area {{ loopback.ospf_area | default('0') }}
+ {% endif %}
+!
+
+!==============================================================================
+! SVI INTERFACES (IF NEEDED)
+!==============================================================================
+!
+{% if svis is defined %}
+{% for svi in svis %}
+interface Vlan{{ svi.vlan_id }}
+ description {{ svi.description }}
+ ip address {{ svi.ip }}
+ {% if svi.hsrp_ip is defined %}
+ standby {{ svi.vlan_id }} ip {{ svi.hsrp_ip }}
+ standby {{ svi.vlan_id }} priority {{ svi.priority | default('100') }}
+ standby {{ svi.vlan_id }} preempt
+ standby {{ svi.vlan_id }} authentication md5 key-string CloudAZ_HSRP_2025
+ {% endif %}
+ no shutdown
+!
+{% endfor %}
+{% endif %}
+
+!==============================================================================
+! OSPF CONFIGURATION
+!==============================================================================
+!
+{% if ospf is defined %}
+router ospf {{ ospf.process_id }}
+ router-id {{ ospf.router_id }}
+ log-adjacency-changes detail
+ auto-cost reference-bandwidth 100000
+ area 0 authentication message-digest
+ {% if ospf.bfd_all_interfaces is defined and ospf.bfd_all_interfaces %}
+ bfd all-interfaces
+ {% endif %}
+ {% if ospf.networks is defined %}
+ {% for network in ospf.networks %}
+ network {{ network.address }} {{ network.wildcard }} area {{ network.area }}
+ {% endfor %}
+ {% endif %}
+ passive-interface default
+ {% for interface in interfaces %}
+ {% if interface.switchport is defined and not interface.switchport %}
+ no passive-interface {{ interface.name }}
+ {% endif %}
+ {% endfor %}
+ maximum-paths 4
+ timers throttle spf 1 5 10
+!
+{% endif %}
+
+!==============================================================================
+! BGP CONFIGURATION
+!==============================================================================
+!
+{% if bgp is defined %}
+router bgp {{ bgp.asn }}
+ bgp router-id {{ bgp.router_id }}
+ bgp log-neighbor-changes
+ {% for neighbor in bgp.neighbors %}
+ neighbor {{ neighbor.ip }} remote-as {{ neighbor.asn }}
+ neighbor {{ neighbor.ip }} description {{ neighbor.desc | default('') }}
+ neighbor {{ neighbor.ip }} update-source Loopback0
+ {% if neighbor.fall_over_bfd is defined and neighbor.fall_over_bfd %}
+ neighbor {{ neighbor.ip }} fall-over bfd
+ {% endif %}
+ {% endfor %}
+ !
+ address-family ipv4
+  {% if bgp.address_family_ipv4 is defined and bgp.address_family_ipv4.networks is defined %}
+  {% for network in bgp.address_family_ipv4.networks %}
+  network {{ network.network }} mask {{ network.mask }}
+  {% endfor %}
+  {% endif %}
+  {% if bgp.address_family_ipv4 is defined and bgp.address_family_ipv4.activate is defined %}
+  {% for neighbor_ip in bgp.address_family_ipv4.activate %}
+  neighbor {{ neighbor_ip }} activate
+  neighbor {{ neighbor_ip }} soft-reconfiguration inbound
+  neighbor {{ neighbor_ip }} send-community both
+  {% endfor %}
+  {% endif %}
+  maximum-paths 4
+  maximum-paths ibgp 4
+ exit-address-family
+!
+{% endif %}
+
+!==============================================================================
+! BFD CONFIGURATION
+!==============================================================================
+!
+bfd-template single-hop BFD-TEMPLATE
+ interval min-tx 300 min-rx 300 multiplier 3
+!
+
+!==============================================================================
+! TRACK OBJECTS
+!==============================================================================
+!
+{% if track is defined %}
+{% for track_obj in track %}
+track {{ track_obj.id }} interface {{ track_obj.interface }} {{ track_obj.type }}
+!
+{% endfor %}
+{% endif %}
+
+!==============================================================================
+! ACCESS CONTROL LISTS
+!==============================================================================
+!
+! Management ACL
+ip access-list extended MGMT-ACCESS
+ permit tcp 192.168.100.0 0.0.0.255 any eq 22
+ permit tcp 192.168.100.0 0.0.0.255 any eq 443
+ permit udp 192.168.100.0 0.0.0.255 any eq snmp
+ permit icmp 192.168.100.0 0.0.0.255 any
+ deny ip any any log
+!
+! Infrastructure Protection ACL
+ip access-list extended INFRASTRUCTURE
+ permit 89 any any
+ permit tcp any any eq 179
+ permit tcp any eq 179 any
+ permit udp any any eq 3784
+ permit udp any any eq 3785
+ permit icmp any any
+ deny ip any any log
+!
+
+!==============================================================================
+! QOS CONFIGURATION
+!==============================================================================
+!
+! Class Maps
+class-map match-all NETWORK-CONTROL
+ match dscp cs6
+!
+class-map match-all NETWORK-MGMT
+ match dscp cs2
+!
+class-map match-all CRITICAL-DATA
+ match dscp af31
+!
+! Policy Map
+policy-map LEAF-QOS-POLICY
+ class NETWORK-CONTROL
+  set dscp cs6
+  priority percent 10
+ class NETWORK-MGMT
+  set dscp cs2
+  bandwidth percent 5
+ class CRITICAL-DATA
+  set dscp af31
+  bandwidth percent 20
+ class class-default
+  fair-queue
+!
+
+!==============================================================================
+! AAA CONFIGURATION
+!==============================================================================
+!
+aaa new-model
+aaa authentication login default group radius local
+aaa authentication enable default enable
+aaa authorization exec default group radius local
+aaa accounting exec default start-stop group radius
+aaa accounting commands 15 default start-stop group radius
+!
+! RADIUS Configuration
+radius server CloudAZ-RADIUS-1
+ address ipv4 192.168.100.201 auth-port 1812 acct-port 1813
+ key CloudAZ_Radius_Key_2025
+ timeout 5
+ retransmit 3
+!
+! Local Users
+username admin privilege 15 secret CloudAZ_Admin_2025
+username operator privilege 10 secret CloudAZ_Operator_2025
+username readonly privilege 1 secret CloudAZ_ReadOnly_2025
+!
+
+!==============================================================================
+! SSH CONFIGURATION
+!==============================================================================
+!
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+ip ssh time-out 300
+ip ssh authentication-retries 3
+!
+line vty 0 4
+ transport input ssh
+ login authentication default
+ exec-timeout 10 0
+ logging synchronous
+!
+line vty 5 15
+ transport input ssh
+ login authentication default
+ exec-timeout 10 0
+ logging synchronous
+!
+
+!==============================================================================
+! SNMP CONFIGURATION
+!==============================================================================
+!
+snmp-server community CloudAZ_RO RO
+snmp-server community CloudAZ_RW RW
+snmp-server location {{ device_name }} - Cloud Availability Zone
+snmp-server contact Network Operations <noc@cloudaz.lab>
+snmp-server host 192.168.100.200 version 2c CloudAZ_RO
+snmp-server enable traps bgp
+snmp-server enable traps ospf state-change
+snmp-server enable traps ospf errors
+snmp-server enable traps ospf retransmit
+snmp-server enable traps ospf lsa
+snmp-server enable traps hsrp
+snmp-server enable traps config
+!
+
+!==============================================================================
+! NTP CONFIGURATION
+!==============================================================================
+!
+ntp authenticate
+ntp authentication-key 1 md5 CloudAZ_NTP_2025
+ntp trusted-key 1
+ntp server 192.168.100.103 key 1 prefer
+ntp server 192.168.100.104 key 1
+ntp source Loopback0
+!
+
+!==============================================================================
+! LOGGING CONFIGURATION
+!==============================================================================
+!
+logging buffered 65536 informational
+logging console warnings
+logging monitor informational
+logging trap informational
+logging source-interface Loopback0
+logging host 192.168.100.200
+!
+
+!==============================================================================
+! IP SLA MONITORING
+!==============================================================================
+!
+{% set sla_id = 100 %}
+{% for interface in interfaces %}
+{% if interface.switchport is defined and not interface.switchport and 'P2P-Link' in interface.description %}
+ip sla {{ sla_id }}
+ icmp-echo {{ interface.ip | ipaddr('1') }} source-interface {{ interface.name }}
+ frequency 30
+ timeout 5000
+ threshold 3000
+!
+ip sla schedule {{ sla_id }} life forever start-time now
+{% set sla_id = sla_id + 1 %}
+{% endif %}
+{% endfor %}
+
+!==============================================================================
+! EVENT MANAGER (EEM)
+!==============================================================================
+!
+event manager applet OSPF-NEIGHBOR-CHANGE
+ event syslog pattern "OSPF.*ADJCHG"
+ action 1.0 syslog msg "OSPF Adjacency Change Detected on {{ device_name }}"
+ action 2.0 cli command "show ip ospf neighbor"
+!
+event manager applet BGP-NEIGHBOR-CHANGE
+ event syslog pattern "BGP.*ADJCHANGE"
+ action 1.0 syslog msg "BGP Neighbor State Change on {{ device_name }}"
+ action 2.0 cli command "show ip bgp summary"
+!
+
+!==============================================================================
+! ARCHIVE AND CONFIG MANAGEMENT
+!==============================================================================
+!
+archive
+ log config
+  logging enable
+  logging size 1000
+  notify syslog contenttype plaintext
+ path tftp://192.168.100.200/{{ device_name }}-config-$ts
+ write-memory
+!
+
+!==============================================================================
+! BANNER CONFIGURATION
+!==============================================================================
+!
+banner motd ^C
+================================================================================
+               CLOUD AVAILABILITY ZONE - {{ device_name.upper() }}
+                        AUTHORIZED ACCESS ONLY
+                        
+    This device is part of a critical network infrastructure.
+    All activities are monitored and logged.
+    Unauthorized access is strictly prohibited.
+    
+    Device Role: LEAF (Access Layer)
+    Contact: Network Operations Center
+    Email: noc@cloudaz.lab
+    Emergency: +1-555-NOC-HELP
+================================================================================
+^C
+!
+
+!==============================================================================
+! STATIC ROUTES (IF NEEDED)
+!==============================================================================
+!
+{% if static_routes is defined %}
+{% for route in static_routes %}
+ip route {{ route.network }} {{ route.next_hop }}
+{% endfor %}
+{% endif %}
+
+!==============================================================================
+! SAVE CONFIGURATION
+!==============================================================================
+!
+end
+write memory
+!
+! End of Configuration

@@ -1,0 +1,340 @@
+! Enhanced SPINE Configuration for {{ device_name }}
+! Device Type: {{ device_os.upper() }} - Cloud Availability Zone
+! Management IP: {{ mgmt_ip }}
+! Generated: {{ ansible_date_time.iso8601 if ansible_date_time is defined else "Static" }}
+!
+!==============================================================================
+! BASIC SYSTEM CONFIGURATION
+!==============================================================================
+!
+hostname {{ device_name }}
+!
+! Feature enablement
+feature ospf
+feature bgp
+feature bfd
+feature interface-vlan
+feature hsrp
+feature lacp
+feature vpc
+feature udld
+feature lldp
+!
+! Global spanning tree configuration
+spanning-tree mode mst
+spanning-tree mst configuration
+  name CLOUD_AZ_MST
+  revision 1
+  instance 1 vlan 100-199
+  instance 2 vlan 200-299
+  instance 3 vlan 300-399
+!
+spanning-tree mst 0-3 priority 4096
+spanning-tree port type edge bpduguard default
+spanning-tree loopguard default
+!
+! Global BFD Configuration
+bfd interval 300 min_rx 300 multiplier 3
+bfd echo
+!
+!==============================================================================
+! INTERFACE CONFIGURATION
+!==============================================================================
+!
+{% for interface in interfaces %}
+interface {{ interface.name }}
+  description {{ interface.description | default('') }}
+  {% if interface.switchport is defined and not interface.switchport %}
+  no switchport
+  ip address {{ interface.ip }}
+  no shutdown
+  {% if interface.ospf_area is defined %}
+  ip ospf {{ ospf.process_id }} area {{ interface.ospf_area }}
+  {% endif %}
+  {% if interface.ospf_bfd is defined and interface.ospf_bfd %}
+  ip ospf bfd
+  {% endif %}
+  bfd interval {{ bfd.interval }} min_rx {{ bfd.min_rx }} multiplier {{ bfd.multiplier }}
+  bfd echo
+  {% else %}
+  switchport
+  {% if interface.mode is defined %}
+  switchport mode {{ interface.mode }}
+  {% endif %}
+  {% if interface.vlan is defined %}
+  switchport access vlan {{ interface.vlan }}
+  {% endif %}
+  spanning-tree port type edge
+  {% endif %}
+!
+{% endfor %}
+
+!==============================================================================
+! LOOPBACK INTERFACE
+!==============================================================================
+!
+interface loopback0
+  description Router-ID and BGP Update Source
+  ip address {{ loopback.ip }}
+  ip ospf {{ ospf.process_id }} area 0
+!
+
+!==============================================================================
+! OSPF CONFIGURATION
+!==============================================================================
+!
+router ospf {{ ospf.process_id }}
+  router-id {{ ospf.router_id }}
+  {% if ospf.bfd is defined and ospf.bfd %}
+  bfd
+  {% endif %}
+  log-adjacency-changes detail
+  auto-cost reference-bandwidth 100000
+  area 0.0.0.0 authentication message-digest
+  {% if ospf.passive_interfaces is defined %}
+  {% for interface in ospf.passive_interfaces %}
+  passive-interface {{ interface }}
+  {% endfor %}
+  {% endif %}
+  maximum-paths 4
+  timers throttle spf 1 5 10
+  timers throttle lsa 1 5 10
+  timers lsa-arrival 1000
+!
+
+!==============================================================================
+! BGP CONFIGURATION
+!==============================================================================
+!
+router bgp {{ bgp.asn }}
+  router-id {{ bgp.router_id }}
+  log-neighbor-changes
+  address-family ipv4 unicast
+    network {{ loopback.ip | ipaddr('network/prefix') }}
+    maximum-paths 4
+    maximum-paths ibgp 4
+  !
+  {% for neighbor in bgp.neighbors %}
+  neighbor {{ neighbor.ip }}
+    remote-as {{ neighbor.asn }}
+    description {{ neighbor.desc }}
+    update-source loopback0
+    {% if neighbor.rr_client is defined and neighbor.rr_client %}
+    route-reflector-client
+    {% endif %}
+    address-family ipv4 unicast
+      soft-reconfiguration inbound
+      send-community both
+  !
+  {% endfor %}
+!
+
+!==============================================================================
+! ROUTE MAPS AND PREFIX LISTS
+!==============================================================================
+!
+{% if route_maps is defined %}
+{% for route_map in route_maps %}
+route-map {{ route_map.name }} permit 10
+  {% if route_map.match_interfaces is defined %}
+  {% for interface in route_map.match_interfaces %}
+  match interface {{ interface }}
+  {% endfor %}
+  {% endif %}
+!
+{% endfor %}
+{% endif %}
+
+!==============================================================================
+! ACCESS CONTROL LISTS
+!==============================================================================
+!
+! Management ACL
+ip access-list MGMT-ACCESS
+  10 permit tcp 192.168.100.0/24 any eq ssh
+  20 permit tcp 192.168.100.0/24 any eq https
+  30 permit udp 192.168.100.0/24 any eq snmp
+  40 permit icmp 192.168.100.0/24 any
+  50 deny ip any any log
+!
+! Infrastructure ACL
+ip access-list INFRASTRUCTURE
+  10 permit ospf any any
+  20 permit tcp any any eq bgp
+  30 permit tcp any eq bgp any
+  40 permit udp any any eq bfd-control
+  50 permit udp any any eq bfd-echo
+  60 permit icmp any any
+  70 deny ip any any log
+!
+
+!==============================================================================
+! NTP CONFIGURATION
+!==============================================================================
+!
+ntp server 192.168.100.103 prefer use-vrf management
+ntp server 192.168.100.104 use-vrf management
+ntp source-interface mgmt0
+ntp authenticate
+ntp authentication-key 1 md5 CloudAZ_NTP_2025
+ntp trusted-key 1
+!
+
+!==============================================================================
+! LOGGING CONFIGURATION  
+!==============================================================================
+!
+logging timestamp milliseconds
+logging console 6
+logging monitor 6
+logging buffered 65536 6
+logging source-interface loopback0
+logging server 192.168.100.200 6 use-vrf management
+logging level ospf 5
+logging level bgp 5
+logging level bfd 5
+!
+
+!==============================================================================
+! SNMP CONFIGURATION
+!==============================================================================
+!
+snmp-server community CloudAZ_RO ro
+snmp-server community CloudAZ_RW rw
+snmp-server location {{ device_name }} - Cloud Availability Zone
+snmp-server contact Network Operations <noc@cloudaz.lab>
+snmp-server host 192.168.100.200 use-vrf management version 2c CloudAZ_RO
+snmp-server enable traps bgp
+snmp-server enable traps ospf
+snmp-server enable traps interface
+snmp-server enable traps hsrp
+!
+
+!==============================================================================
+! QOS CONFIGURATION
+!==============================================================================
+!
+! Network Control Traffic
+class-map type qos match-all NETWORK-CONTROL
+  match dscp cs6
+!
+class-map type qos match-all NETWORK-MGMT
+  match dscp cs2
+!
+class-map type qos match-all CRITICAL-DATA
+  match dscp af31
+!
+policy-map type qos SPINE-QOS-POLICY
+  class NETWORK-CONTROL
+    set qos-group 7
+    police cir 50 mbps
+  class NETWORK-MGMT
+    set qos-group 2
+    police cir 10 mbps
+  class CRITICAL-DATA
+    set qos-group 3
+  class class-default
+    set qos-group 0
+!
+system qos
+  service-policy type qos input SPINE-QOS-POLICY
+!
+
+!==============================================================================
+! SECURITY CONFIGURATION
+!==============================================================================
+!
+! AAA Configuration
+aaa group server radius CloudAZ-RADIUS
+  server 192.168.100.201
+  use-vrf management
+  source-interface mgmt0
+!
+aaa authentication login default group CloudAZ-RADIUS local
+aaa authentication login console local
+aaa authorization exec default group CloudAZ-RADIUS local
+aaa accounting exec default start-stop group CloudAZ-RADIUS
+aaa accounting commands default start-stop group CloudAZ-RADIUS
+!
+! Local users
+username admin password 5 $5$rounds=10000$xyz$abcdefghijklmnop role network-admin
+username operator password 5 $5$rounds=10000$abc$defghijklmnopqrs role network-operator
+username readonly password 5 $5$rounds=10000$def$ghijklmnopqrstuv role priv-0
+!
+! SSH Configuration
+ssh server enable
+ssh key rsa 2048
+ssh server vrf management
+ssh server max-auth-failures 3
+ssh server timeout 300
+!
+! RADIUS Configuration
+radius-server host 192.168.100.201 key 7 CloudAZ_Radius_Key_2025
+radius-server timeout 5
+radius-server retransmit 3
+!
+
+!==============================================================================
+! MONITORING AND HEALTH
+!==============================================================================
+!
+! IP SLA for Link Monitoring
+{% set sla_id = 1 %}
+{% for interface in interfaces %}
+{% if interface.switchport is defined and not interface.switchport and 'P2P-Link' in interface.description %}
+ip sla {{ sla_id }}
+  icmp-echo {{ interface.ip | ipaddr('1') }}
+  frequency 30
+  timeout 5000
+  threshold 3000
+!
+ip sla schedule {{ sla_id }} start-time now life forever
+{% set sla_id = sla_id + 1 %}
+{% endif %}
+{% endfor %}
+
+!==============================================================================
+! EVENT MANAGER (EEM)
+!==============================================================================
+!
+event manager applet OSPF-NEIGHBOR-DOWN
+  event syslog pattern "OSPF.*ADJCHG.*Down"
+  action 1.0 syslog msg "OSPF Neighbor Down - Investigating"
+  action 2.0 cli command "show ip ospf neighbor"
+  action 3.0 cli command "show ip ospf interface brief"
+!
+event manager applet BGP-NEIGHBOR-DOWN  
+  event syslog pattern "BGP.*ADJCHANGE.*Down"
+  action 1.0 syslog msg "BGP Neighbor Down - Investigating"
+  action 2.0 cli command "show ip bgp summary"
+  action 3.0 cli command "show ip bgp neighbors"
+!
+
+!==============================================================================
+! SYSTEM BANNERS
+!==============================================================================
+!
+banner motd ^
+================================================================================
+               CLOUD AVAILABILITY ZONE - {{ device_name.upper() }}
+                        AUTHORIZED ACCESS ONLY
+                        
+    This device is part of a critical network infrastructure.
+    All activities are monitored and logged. 
+    Unauthorized access is strictly prohibited.
+    
+    Device Role: SPINE (Core Layer)
+    Contact: Network Operations Center
+    Email: noc@cloudaz.lab
+    Emergency: +1-555-NOC-HELP
+================================================================================
+^
+!
+
+!==============================================================================
+! SAVE CONFIGURATION
+!==============================================================================
+!
+copy running-config startup-config
+!
+! End of Configuration

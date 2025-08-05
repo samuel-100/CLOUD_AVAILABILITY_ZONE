@@ -1,0 +1,156 @@
+! Advanced OSPF Configuration Template
+! Device: {{ device_name }} ({{ device_role.upper() }}) - {{ device_os.upper() }}
+!
+{% if device_os.lower() == 'nxos' %}
+! === NX-OS OSPF Configuration ===
+!
+feature ospf
+feature bfd
+!
+router ospf {{ ospf_process_id }}
+  router-id {{ router_id }}
+  log-adjacency-changes detail
+  auto-cost reference-bandwidth 100000
+  area {{ ospf_area }} authentication message-digest
+  area {{ ospf_area }} default-cost 1
+  
+  ! Graceful restart configuration
+  graceful-restart
+  graceful-restart grace-period 60
+  graceful-restart helper-disable
+  
+  ! LSA throttling and optimization
+  max-lsa 12000
+  timers throttle lsa 0 50 5000
+  timers throttle spf 50 200 5000
+  
+  ! Default passive interface behavior
+  passive-interface default
+  
+  ! BFD global configuration
+  {% if bfd_enabled %}
+  bfd all-interfaces
+  {% endif %}
+
+! Interface-specific OSPF configuration
+{% for interface in interfaces %}
+{% if interface.ospf_area is defined %}
+interface {{ interface.name }}
+  description {{ interface.description }}
+  {% if interface.switchport == false %}
+  no switchport
+  ip address {{ interface.ip }}
+  {% endif %}
+  ip router ospf {{ ospf_process_id }} area {{ interface.ospf_area }}
+  ip ospf network point-to-point
+  ip ospf hello-interval 1
+  ip ospf dead-interval 3
+  ip ospf message-digest-key 1 md5 {{ ospf_auth_key }}
+  {% if interface.ospf_bfd %}
+  ip ospf bfd
+  {% endif %}
+  no passive-interface {{ interface.name }}
+  no shutdown
+!
+{% endif %}
+{% endfor %}
+
+! Loopback interfaces
+interface loopback0
+  description OSPF Router ID
+  ip address {{ router_id }}/32
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+!
+
+{% else %}
+! === IOS OSPF Configuration ===
+!
+router ospf {{ ospf_process_id }}
+  router-id {{ router_id }}
+  log-adjacency-changes detail
+  auto-cost reference-bandwidth 10000
+  area {{ ospf_area }} authentication message-digest
+  
+  ! Timers optimization
+  timers throttle spf 50 200 5000
+  timers throttle lsa 0 50 5000
+  
+  ! Default passive interface behavior
+  passive-interface default
+  
+  ! Network statements
+  network {{ router_id }} 0.0.0.0 area {{ ospf_area }}
+  
+  {% for network in networks %}
+  network {{ network.address }} {{ network.wildcard }} area {{ network.area }}
+  {% endfor %}
+  
+  ! BFD configuration
+  {% if bfd_enabled %}
+  bfd all-interfaces
+  {% endif %}
+
+! Interface-specific configuration
+{% for interface in interfaces %}
+{% if interface.ospf_area is defined %}
+interface {{ interface.name }}
+  description {{ interface.description }}
+  ip address {{ interface.ip }}
+  ip ospf {{ ospf_process_id }} area {{ interface.ospf_area }}
+  ip ospf network point-to-point
+  ip ospf hello-interval 1
+  ip ospf dead-interval 3
+  ip ospf message-digest-key 1 md5 {{ ospf_auth_key }}
+  {% if interface.ospf_bfd %}
+  bfd interval {{ bfd_enabled }} min_rx {{ bfd_enabled }} multiplier 3
+  ip ospf bfd
+  {% endif %}
+  no passive-interface {{ interface.name }}
+  no shutdown
+!
+{% endif %}
+{% endfor %}
+
+{% endif %}
+
+! Redistribution configuration
+{% if redistribution.connected %}
+  {% if device_os.lower() == 'nxos' %}
+  redistribute direct route-map CONNECTED-TO-OSPF
+  {% else %}
+  redistribute connected subnets route-map CONNECTED-TO-OSPF
+  {% endif %}
+{% endif %}
+
+{% if redistribution.static %}
+  {% if device_os.lower() == 'nxos' %}
+  redistribute static route-map STATIC-TO-OSPF
+  {% else %}
+  redistribute static subnets route-map STATIC-TO-OSPF
+  {% endif %}
+{% endif %}
+
+{% if redistribution.bgp %}
+  {% if device_os.lower() == 'nxos' %}
+  redistribute bgp {{ bgp_asn }} route-map BGP-TO-OSPF
+  {% else %}
+  redistribute bgp {{ bgp_asn }} subnets route-map BGP-TO-OSPF
+  {% endif %}
+{% endif %}
+
+! Route-maps for redistribution
+route-map CONNECTED-TO-OSPF permit 10
+  match interface loopback0
+  set metric 1
+  set metric-type type-1
+!
+route-map CONNECTED-TO-OSPF deny 20
+!
+route-map STATIC-TO-OSPF permit 10
+  set metric 10
+  set metric-type type-2
+!
+route-map BGP-TO-OSPF permit 10
+  set metric 100
+  set metric-type type-2
+!

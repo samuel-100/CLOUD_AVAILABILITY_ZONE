@@ -1,0 +1,283 @@
+!
+! ================================================================
+! CLOUD AVAILABILITY ZONE - LEAF2 CONFIGURATION
+! ================================================================
+! Generated: 2025-08-05 02:37:25 UTC
+! Device: LEAF2 (LEAF)
+! OS: IOSV
+! Management IP: 192.168.100.13
+! Credentials: admin/cisco123
+! ================================================================
+!
+
+!
+! === BASE SYSTEM CONFIGURATION (IOS) ===
+!
+hostname LEAF2
+!
+enable secret 5 $1$mERr$9cTjUIEqNGurQiFU2ZNPh0
+!
+username admin privilege 15 secret 0 cisco123
+!
+ip domain-name cloud-automation.local
+ip name-server 8.8.8.8
+ip name-server 8.8.4.4
+!
+interface GigabitEthernet0/0
+  description Management Interface  
+  ip address 192.168.100.13 255.255.255.0
+  no shutdown
+!
+ip route 0.0.0.0 0.0.0.0 192.168.100.1
+!
+clock timezone UTC 0 0
+clock summer-time UTC recurring
+!
+service timestamps debug datetime msec localtime show-timezone
+service timestamps log datetime msec localtime show-timezone
+service password-encryption
+!
+banner motd ^
+================================================================
+    CLOUD AVAILABILITY ZONE - LEAF2
+    Network Automation Platform
+    Unauthorized access prohibited
+================================================================
+^
+!
+
+!
+! === INTERFACE CONFIGURATION ===
+!
+interface GigabitEthernet1/0
+  description P2P-Link-to-SPINE1
+  ip address 10.100.100.6/30
+  no shutdown
+!
+interface GigabitEthernet1/1
+  description P2P-Link-to-SPINE2
+  ip address 10.100.100.26/30
+  no shutdown
+!
+interface GigabitEthernet0/0
+  description Network Interface
+  switchport mode access
+  switchport access vlan 200
+  no shutdown
+!
+interface GigabitEthernet0/1
+  description Network Interface
+  switchport mode access
+  switchport access vlan 300
+  no shutdown
+!
+interface loopback0
+  description Network Interface
+  no shutdown
+!
+
+
+!
+! === OSPF CONFIGURATION ===
+!
+router ospf 1
+  router-id 14.14.14.14
+  log-adjacency-changes detail
+  auto-cost reference-bandwidth 10000
+  area 0 authentication message-digest
+  timers throttle spf 50 200 5000
+  timers throttle lsa 0 50 5000
+  passive-interface default
+  bfd all-interfaces
+  network 10.100.100.30 0.0.0.3 area 0
+  network 10.100.100.22 0.0.0.3 area 0
+!
+interface GigabitEthernet1/0
+  ip ospf 1 area 0
+  ip ospf network point-to-point
+  ip ospf hello-interval 1
+  ip ospf dead-interval 3
+  ip ospf message-digest-key 1 md5 CloudAutomation123!
+  no passive-interface GigabitEthernet1/0
+!interface GigabitEthernet1/1
+  ip ospf 1 area 0
+  ip ospf network point-to-point
+  ip ospf hello-interval 1
+  ip ospf dead-interval 3
+  ip ospf message-digest-key 1 md5 CloudAutomation123!
+  no passive-interface GigabitEthernet1/1
+!interface loopback0
+  ip ospf 1 area 0
+  ip ospf network point-to-point
+  ip ospf hello-interval 1
+  ip ospf dead-interval 3
+  ip ospf message-digest-key 1 md5 CloudAutomation123!
+  no passive-interface loopback0
+!
+
+!
+! === BGP CONFIGURATION ===
+!
+router bgp 65000
+  bgp router-id 14.14.14.14
+  bgp log-neighbor-changes
+  bgp bestpath as-path multipath-relax
+  bgp bestpath compare-routerid
+  bgp graceful-restart restart-time 120
+  bgp graceful-restart stalepath-time 300
+  maximum-paths 8
+  maximum-paths ibgp 8
+  bgp dampening 15 750 2000 60
+  
+  redistribute ospf 1 route-map OSPF-TO-BGP
+  redistribute connected route-map CONNECTED-TO-BGP
+
+  neighbor 1.1.1.1 remote-as 65000
+  neighbor 1.1.1.1 description BGP-Peer-1.1.1.1
+  neighbor 1.1.1.1 update-source Loopback0
+  neighbor 1.1.1.1 timers 3 9
+  neighbor 1.1.1.1 password CloudBGP123!
+  neighbor 1.1.1.1 send-community
+  neighbor 1.1.1.1 send-community extended
+  neighbor 1.1.1.1 soft-reconfiguration inbound
+  neighbor 1.1.1.1 maximum-prefix 1000 85 restart 5
+  neighbor 2.2.2.2 remote-as 65000
+  neighbor 2.2.2.2 description BGP-Peer-2.2.2.2
+  neighbor 2.2.2.2 update-source Loopback0
+  neighbor 2.2.2.2 timers 3 9
+  neighbor 2.2.2.2 password CloudBGP123!
+  neighbor 2.2.2.2 send-community
+  neighbor 2.2.2.2 send-community extended
+  neighbor 2.2.2.2 soft-reconfiguration inbound
+  neighbor 2.2.2.2 maximum-prefix 1000 85 restart 5
+!
+!
+! BGP Route Maps
+!
+route-map OSPF-TO-BGP permit 10
+  match ip address prefix-list LOOPBACKS
+  set origin igp
+  set local-preference 200
+  set community 65000:100
+!
+route-map OSPF-TO-BGP permit 20
+  match ip address prefix-list SERVER-NETWORKS
+  set origin igp
+  set local-preference 150
+  set community 65000:200
+!
+route-map OSPF-TO-BGP deny 30
+!
+route-map CONNECTED-TO-BGP permit 10
+  match ip address prefix-list LOOPBACKS
+  set origin igp
+  set local-preference 200
+  set community 65000:100
+!
+route-map CONNECTED-TO-BGP deny 20
+!
+ip prefix-list LOOPBACKS permit 1.1.1.1/32
+ip prefix-list LOOPBACKS permit 2.2.2.2/32
+ip prefix-list LOOPBACKS permit 11.11.11.11/32
+ip prefix-list LOOPBACKS permit 12.12.12.12/32
+ip prefix-list LOOPBACKS permit 13.13.13.13/32
+ip prefix-list LOOPBACKS permit 14.14.14.14/32
+!
+ip prefix-list SERVER-NETWORKS permit 192.168.100.0/24
+ip prefix-list SERVER-NETWORKS permit 192.168.200.0/24
+ip prefix-list SERVER-NETWORKS permit 192.168.30.0/24
+!
+
+
+
+!
+! === QoS CONFIGURATION ===
+!
+class-map match-any VOICE
+  match dscp ef
+!
+class-map match-any VIDEO
+  match dscp af41
+  match dscp af42
+  match dscp af43
+!
+class-map match-any CRITICAL-DATA
+  match dscp af31
+  match dscp af32
+  match dscp af33
+!
+policy-map EGRESS-POLICY
+  class VOICE
+    priority percent 20
+    set dscp ef
+  class VIDEO
+    bandwidth percent 30
+    set dscp af41
+  class CRITICAL-DATA
+    bandwidth percent 25
+    set dscp af31
+  class class-default
+    fair-queue
+    random-detect
+!
+
+!
+! === SECURITY CONFIGURATION ===
+!
+aaa new-model
+aaa authentication login default local
+aaa authentication enable default enable
+aaa authorization console
+aaa authorization exec default local
+aaa accounting exec default start-stop local
+aaa accounting commands 15 default start-stop local
+!username admin privilege 15 secret 0 cisco123
+username operator privilege 10 secret 0 operator123
+username readonly privilege 1 secret 0 readonly123
+!ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 3
+crypto key generate rsa general-keys modulus 2048
+!line console 0
+  login authentication default
+  logging synchronous
+  exec-timeout 10 0
+line vty 0 15
+  login authentication default
+  transport input ssh
+  exec-timeout 10 0
+  logging synchronous
+!no ip http server
+no ip http secure-server
+no cdp run
+service password-encryption
+!
+
+!
+! === MONITORING CONFIGURATION ===
+!
+snmp-server community CloudRO RO
+snmp-server community CloudRW RW
+snmp-server location Cloud Availability Zone
+snmp-server contact Network Operations Center
+snmp-server enable traps
+!logging buffered 32768
+logging console warnings
+logging monitor warnings
+logging trap informational
+logging facility local0
+logging source-interface loopback0
+logging host 192.168.100.200
+!ntp authenticate
+ntp authentication-key 1 md5 CloudNTP123!
+ntp trusted-key 1
+ntp server 192.168.100.201 key 1 prefer
+ntp server 192.168.100.202 key 1
+ntp source loopback0
+!
+
+!
+! ================================================================
+! END OF CONFIGURATION - LEAF2
+! ================================================================
+!

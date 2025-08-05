@@ -1,0 +1,139 @@
+! Advanced HSRP/VRRP Configuration Template
+! Device: {{ device_name }} - {{ device_os.upper() }}
+!
+{% if device_os.lower() == 'nxos' %}
+! === NX-OS HSRP Configuration ===
+!
+feature hsrp
+feature interface-vlan
+!
+! Track Objects for Interface Monitoring
+{% for track in track_objects %}
+track {{ track.id }} interface {{ track.interface }} {% if track.line_protocol %}line-protocol{% endif %}
+{% endfor %}
+!
+! HSRP Configuration per VLAN
+{% for hsrp in hsrp_groups %}
+interface vlan{{ hsrp.vlan }}
+  description {{ hsrp.description | default('VLAN ' + hsrp.vlan|string + ' Gateway') }}
+  no shutdown
+  ip address {{ hsrp.ip_address }}
+  
+  ! HSRP Group Configuration
+  hsrp version 2
+  hsrp {{ hsrp.group_id }}
+    authentication md5 key-string {{ hsrp.authentication }}
+    preempt delay minimum 30
+    priority {{ hsrp.priority }}
+    timers {{ hsrp.timers.hello }} {{ hsrp.timers.hold }}
+    ip {{ hsrp.virtual_ip }}
+    
+    ! Track uplink interfaces
+    {% for track_id in hsrp.track %}
+    track {{ track_id }} decrement 20
+    {% endfor %}
+    
+    ! HSRP optimization
+    hsrp {{ hsrp.group_id }} mac-refresh 60
+    hsrp {{ hsrp.group_id }} use-bia
+!
+{% endfor %}
+
+{% else %}
+! === IOS HSRP Configuration ===
+!
+! Track Objects for Interface Monitoring
+{% for track in track_objects %}
+track {{ track.id }} interface {{ track.interface }} {% if track.line_protocol %}line-protocol{% endif %}
+{% endfor %}
+!
+! HSRP Configuration per VLAN
+{% for hsrp in hsrp_groups %}
+interface vlan{{ hsrp.vlan }}
+  description {{ hsrp.description | default('VLAN ' + hsrp.vlan|string + ' Gateway') }}
+  ip address {{ hsrp.ip_address }}
+  no shutdown
+  
+  ! HSRP Group Configuration
+  standby version 2
+  standby {{ hsrp.group_id }} authentication md5 key-string {{ hsrp.authentication }}
+  standby {{ hsrp.group_id }} ip {{ hsrp.virtual_ip }}
+  standby {{ hsrp.group_id }} priority {{ hsrp.priority }}
+  standby {{ hsrp.group_id }} preempt delay minimum 30
+  standby {{ hsrp.group_id }} timers {{ hsrp.timers.hello }} {{ hsrp.timers.hold }}
+  
+  ! Track uplink interfaces
+  {% for track_id in hsrp.track %}
+  standby {{ hsrp.group_id }} track {{ track_id }} decrement 20
+  {% endfor %}
+!
+{% endfor %}
+
+{% endif %}
+
+! Advanced HSRP Features
+!
+! HSRP MAC Address Optimization
+{% if device_os.lower() == 'nxos' %}
+! Use BIA (Burned-in Address) for HSRP MAC
+{% for hsrp in hsrp_groups %}
+interface vlan{{ hsrp.vlan }}
+  hsrp {{ hsrp.group_id }} use-bia
+{% endfor %}
+{% endif %}
+
+! HSRP Load Balancing (Multiple Groups)
+{% if hsrp_groups|length > 1 %}
+! Configure multiple HSRP groups for load balancing
+{% for hsrp in hsrp_groups %}
+{% if loop.index % 2 == 1 %}
+! Primary group for odd VLANs
+interface vlan{{ hsrp.vlan }}
+  {% if device_os.lower() == 'nxos' %}
+  hsrp {{ hsrp.group_id }} priority {{ hsrp.priority + 10 }}
+  {% else %}
+  standby {{ hsrp.group_id }} priority {{ hsrp.priority + 10 }}
+  {% endif %}
+{% else %}
+! Secondary group for even VLANs
+interface vlan{{ hsrp.vlan }}
+  {% if device_os.lower() == 'nxos' %}
+  hsrp {{ hsrp.group_id }} priority {{ hsrp.priority - 10 }}
+  {% else %}
+  standby {{ hsrp.group_id }} priority {{ hsrp.priority - 10 }}
+  {% endif %}
+{% endif %}
+!
+{% endfor %}
+{% endif %}
+
+! HSRP Security Enhancement
+{% if device_os.lower() == 'nxos' %}
+! Enable HSRP MAC address validation
+ip arp inspection validate src-mac dst-mac ip
+{% else %}
+! Enable HSRP gratuitous ARP
+{% for hsrp in hsrp_groups %}
+interface vlan{{ hsrp.vlan }}
+  standby {{ hsrp.group_id }} mac-refresh 60
+{% endfor %}
+{% endif %}
+
+! HSRP Monitoring and Debugging
+!
+! Enable HSRP logging
+{% if device_os.lower() == 'nxos' %}
+logging level hsrp 6
+{% else %}
+! HSRP debugging (enable only for troubleshooting)
+! debug standby
+! debug standby events
+{% endif %}
+
+! HSRP Show Commands (for reference)
+!
+! show hsrp brief
+! show hsrp active
+! show hsrp standby
+! show track brief
+!

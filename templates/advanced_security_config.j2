@@ -1,0 +1,261 @@
+! Advanced Security Configuration Template
+! Device: {{ device_name }} - {{ device_os.upper() }}
+!
+{% if device_os.lower() == 'nxos' %}
+! === NX-OS Security Configuration ===
+!
+! Enable security features
+feature dhcp
+feature interface-vlan
+feature hsrp
+feature vpc
+!
+! Access Control Lists
+{% for acl in acls %}
+ip access-list {{ acl.name }}
+  {% for rule in acl.rules %}
+  {{ rule }}
+  {% endfor %}
+!
+{% endfor %}
+
+! DHCP Snooping Configuration
+{% if dhcp_snooping.enabled %}
+ip dhcp snooping
+ip dhcp snooping vlan 1-4094
+{% for interface in dhcp_snooping.trusted_interfaces %}
+interface {{ interface }}
+  ip dhcp snooping trust
+{% endfor %}
+ip dhcp snooping limit rate {{ dhcp_snooping.rate_limit }}
+ip dhcp snooping verify mac-address
+{% endif %}
+
+! Port Security Configuration
+{% if port_security.enabled %}
+switchport port-security
+switchport port-security maximum {{ port_security.maximum }}
+switchport port-security violation {{ port_security.violation }}
+switchport port-security aging time {{ port_security.aging_time }}
+switchport port-security aging type inactivity
+{% endif %}
+
+! Storm Control Configuration
+{% if storm_control %}
+storm-control broadcast level {{ storm_control.broadcast }}
+storm-control multicast level {{ storm_control.multicast }}
+storm-control unicast level {{ storm_control.unicast }}
+storm-control action shutdown
+{% endif %}
+
+! Dynamic ARP Inspection
+ip arp inspection vlan 1-4094
+ip arp inspection validate src-mac dst-mac ip
+ip arp inspection log-buffer entries 1024
+ip arp inspection log-buffer logs 1024 interval 1
+{% for interface in dhcp_snooping.trusted_interfaces %}
+interface {{ interface }}
+  ip arp inspection trust
+{% endfor %}
+
+! IP Source Guard
+ip source-guard
+{% for interface in dhcp_snooping.trusted_interfaces %}
+interface {{ interface }}
+  ip verify source dhcp-snooping-vlan
+{% endfor %}
+
+{% else %}
+! === IOS Security Configuration ===
+!
+! Access Control Lists
+{% for acl in acls %}
+ip access-list extended {{ acl.name }}
+  {% for rule in acl.rules %}
+  {{ rule }}
+  {% endfor %}
+!
+{% endfor %}
+
+! DHCP Snooping Configuration
+{% if dhcp_snooping.enabled %}
+ip dhcp snooping
+ip dhcp snooping vlan 1-4094
+{% for interface in dhcp_snooping.trusted_interfaces %}
+interface {{ interface }}
+  ip dhcp snooping trust
+{% endfor %}
+ip dhcp snooping limit rate {{ dhcp_snooping.rate_limit }}
+ip dhcp snooping verify mac-address
+ip dhcp snooping database timeout 3600
+{% endif %}
+
+! Port Security Configuration
+{% if port_security.enabled %}
+! Apply to access ports
+switchport port-security
+switchport port-security maximum {{ port_security.maximum }}
+switchport port-security violation {{ port_security.violation }}
+switchport port-security aging time {{ port_security.aging_time }}
+switchport port-security aging type inactivity
+switchport port-security mac-address sticky
+{% endif %}
+
+! Storm Control Configuration
+{% if storm_control %}
+storm-control broadcast level {{ storm_control.broadcast }}
+storm-control multicast level {{ storm_control.multicast }}
+storm-control unicast level {{ storm_control.unicast }}
+storm-control action shutdown
+{% endif %}
+
+! Dynamic ARP Inspection
+ip arp inspection vlan 1-4094
+ip arp inspection validate src-mac dst-mac ip
+ip arp inspection log-buffer entries 1024
+{% for interface in dhcp_snooping.trusted_interfaces %}
+interface {{ interface }}
+  ip arp inspection trust
+{% endfor %}
+
+! IP Source Guard
+{% for interface in dhcp_snooping.trusted_interfaces %}
+interface {{ interface }}
+  ip verify source
+{% endfor %}
+
+{% endif %}
+
+! AAA Security Configuration
+!
+aaa new-model
+aaa authentication login default local
+aaa authentication enable default enable
+aaa authorization console
+aaa authorization exec default local
+aaa accounting exec default start-stop local
+aaa accounting commands 15 default start-stop local
+!
+! Local users with privilege levels - Device-specific passwords
+{% if device_name == 'SPINE2' %}
+username admin privilege 15 secret 0 Cisco123
+{% else %}
+username admin privilege 15 secret 0 cisco123
+{% endif %}
+username operator privilege 10 secret 0 operator123
+username readonly privilege 1 secret 0 readonly123
+!
+! Privilege levels
+privilege exec level 10 show running-config
+privilege exec level 10 show ip route
+privilege exec level 10 show interface
+privilege exec level 10 ping
+privilege exec level 10 traceroute
+!
+! Line security
+line console 0
+  login authentication default
+  logging synchronous
+  exec-timeout 10 0
+line vty 0 4
+  login authentication default
+  transport input ssh
+  exec-timeout 10 0
+  logging synchronous
+line vty 5 15
+  login authentication default
+  transport input ssh
+  exec-timeout 10 0
+  logging synchronous
+!
+! SSH Configuration
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh pubkey-auth
+crypto key generate rsa general-keys modulus 2048
+!
+! Banner configuration
+banner login ^C
+=====================================
+    AUTHORIZED ACCESS ONLY
+    
+    This system is for authorized users only.
+    All activities are logged and monitored.
+    Unauthorized access is prohibited.
+=====================================
+^C
+!
+! SNMP Security
+snmp-server community RO_Community RO
+snmp-server community RW_Community RW
+snmp-server location {{ device_name }} - Cloud Availability Zone
+snmp-server contact Network Operations Center
+!
+! Control Plane Protection
+{% if device_os.lower() == 'nxos' %}
+control-plane
+  service-policy input CONTROL-PLANE-POLICY
+{% else %}
+control-plane host
+  management-interface {{ mgmt_interface | default('GigabitEthernet0/0') }} allow ssh snmp https
+{% endif %}
+!
+! Certificate-based Authentication (802.1X)
+{% if device_os.lower() != 'nxos' %}
+dot1x system-auth-control
+dot1x critical eapol
+aaa authorization network default group radius
+radius-server host 192.168.100.200 auth-port 1812 acct-port 1813
+radius-server key RadiusKey123!
+{% endif %}
+!
+! Secure Management
+!
+! Disable unnecessary services
+{% if device_os.lower() == 'nxos' %}
+no feature telnet
+no ip http server
+no ip http secure-server
+{% else %}
+no ip http server
+no ip http secure-server
+no cdp run
+no lldp run
+service password-encryption
+service timestamps debug datetime msec localtime show-timezone
+service timestamps log datetime msec localtime show-timezone
+{% endif %}
+!
+! Enable secure services
+ip ssh server enable
+{% if device_os.lower() == 'nxos' %}
+feature scp-server
+{% else %}
+ip scp server enable
+{% endif %}
+!
+! Logging Security
+logging buffered 16384
+logging console warnings
+logging monitor warnings
+logging trap informational
+logging facility local0
+logging source-interface loopback0
+!
+! NTP Security
+ntp authenticate
+ntp authentication-key 1 md5 NTPKey123!
+ntp trusted-key 1
+ntp server 192.168.100.103 key 1 prefer
+ntp server 192.168.100.104 key 1
+!
+! Rate Limiting for Management
+{% if device_os.lower() == 'nxos' %}
+control-plane
+  police cir 2000000 bc 200000 conform transmit exceed drop
+{% else %}
+control-plane host
+  management-interface {{ mgmt_interface | default('GigabitEthernet0/0') }} allow ssh snmp https
+{% endif %}
+!

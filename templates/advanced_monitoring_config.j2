@@ -1,0 +1,247 @@
+! Advanced Monitoring Configuration Template
+! Device: {{ device_name }} - {{ device_os.upper() }}
+!
+{% if device_os.lower() == 'nxos' %}
+! === NX-OS Monitoring Configuration ===
+!
+! Enable monitoring features
+feature telnet
+feature ssh
+feature scp-server
+feature sftp-server
+!
+! SNMP Configuration
+{% if snmp.version == 'v3' %}
+snmp-server enable traps
+snmp-server globalEnforcePriv
+{% for user in snmp.users %}
+snmp-server user {{ user.name }} network-admin auth {{ user.auth_protocol }} {{ user.auth_password }} priv {{ user.priv_protocol }} {{ user.priv_password }}
+{% endfor %}
+{% for view in snmp.views %}
+snmp-server view {{ view.name }} {{ view.oid }} {{ view.type }}
+{% endfor %}
+snmp-server context network-admin
+{% endif %}
+!
+! NetFlow Configuration
+{% if netflow %}
+feature netflow
+flow exporter NETFLOW-EXPORTER
+  description NetFlow Exporter to Collector
+  destination {{ netflow.destination }} use-vrf management
+  source {{ netflow.source_interface }}
+  transport udp {{ netflow.port }}
+  version {{ netflow.version }}
+  template data timeout {{ netflow.template_refresh }}
+
+flow record NETFLOW-RECORD
+  description NetFlow Record for Traffic Analysis
+  match ipv4 source address
+  match ipv4 destination address
+  match ipv4 protocol
+  match transport source-port
+  match transport destination-port
+  match interface input
+  collect counter bytes
+  collect counter packets
+  collect timestamp sys-uptime first
+  collect timestamp sys-uptime last
+
+flow monitor NETFLOW-MONITOR
+  description NetFlow Monitor
+  exporter NETFLOW-EXPORTER
+  record NETFLOW-RECORD
+
+! Apply NetFlow to interfaces
+{% for interface in interfaces %}
+{% if interface.netflow_enabled is not defined or interface.netflow_enabled %}
+interface {{ interface.name }}
+  ip flow monitor NETFLOW-MONITOR input sampler NETFLOW-SAMPLER
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% else %}
+! === IOS Monitoring Configuration ===
+!
+! SNMP Configuration
+{% if snmp.version == 'v3' %}
+snmp-server enable traps
+{% for user in snmp.users %}
+snmp-server user {{ user.name }} NETWORK-ADMINS v3 auth {{ user.auth_protocol }} {{ user.auth_password }} priv {{ user.priv_protocol }} {{ user.priv_password }}
+{% endfor %}
+snmp-server group NETWORK-ADMINS v3 priv read READONLY write READWRITE
+{% for view in snmp.views %}
+snmp-server view {{ view.name }} {{ view.oid }} {{ view.type }}
+{% endfor %}
+{% endif %}
+!
+! NetFlow Configuration
+{% if netflow %}
+ip flow-export version {{ netflow.version }}
+ip flow-export destination {{ netflow.destination }} {{ netflow.port }}
+ip flow-export source {{ netflow.source_interface }}
+ip flow-export template timeout-rate {{ netflow.template_refresh }}
+ip flow-cache timeout active 5
+ip flow-cache timeout inactive 15
+
+! Apply NetFlow to interfaces
+{% for interface in interfaces %}
+{% if interface.netflow_enabled is not defined or interface.netflow_enabled %}
+interface {{ interface.name }}
+  ip flow ingress
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endif %}
+
+! Syslog Configuration
+!
+{% for server in syslog.servers %}
+logging host {{ server }} transport udp port 514
+{% endfor %}
+logging trap {{ syslog.severity }}
+logging facility {{ syslog.facility }}
+logging source-interface {{ syslog.source_interface }}
+logging buffered 32768
+logging console warnings
+logging monitor warnings
+!
+! Structured logging format
+service timestamps debug datetime msec localtime show-timezone
+service timestamps log datetime msec localtime show-timezone
+!
+! Enhanced logging for troubleshooting
+logging event link-status
+logging event trunk-status
+{% if device_os.lower() == 'nxos' %}
+logging level local7 6
+logging level bgp 6
+logging level ospf 6
+logging level hsrp 6
+{% endif %}
+
+! NTP Configuration
+!
+{% if ntp.authentication %}
+ntp authenticate
+ntp authentication-key 1 md5 {{ ntp.auth_key | default('NTPSecure123!') }}
+ntp trusted-key 1
+{% endif %}
+{% for server in ntp.servers %}
+ntp server {{ server }}{% if ntp.authentication %} key 1{% endif %}{% if loop.first %} prefer{% endif %}
+{% endfor %}
+ntp source {{ ntp.source_interface }}
+ntp update-calendar
+!
+! Clock Configuration
+clock timezone UTC 0 0
+clock summer-time UTC recurring
+!
+! SPAN/RSPAN Configuration for Monitoring
+!
+{% if device_os.lower() == 'nxos' %}
+! Monitor session for traffic analysis
+monitor session 1
+  source interface ethernet1/1-2 both
+  destination interface ethernet1/48
+  no shut
+{% else %}
+! Local SPAN configuration
+monitor session 1 source interface GigabitEthernet0/1 - 2 both
+monitor session 1 destination interface GigabitEthernet0/48
+{% endif %}
+
+! Performance Monitoring
+!
+{% if device_os.lower() == 'nxos' %}
+! CPU and memory monitoring
+system health syslog threshold cpu 80 90
+system health syslog threshold memory 80 90
+system health syslog threshold temperature 80 90
+!
+! Interface utilization monitoring
+load-interval 30
+{% else %}
+! Process monitoring
+process cpu threshold type total rising 80 interval 5
+process cpu statistics limit entry-percentage 5
+!
+! Memory monitoring
+memory statistics history table 72
+{% endif %}
+
+! IP SLA for Connectivity Monitoring
+!
+{% if device_os.lower() != 'nxos' %}
+ip sla 1
+  icmp-echo 8.8.8.8 source-interface {{ ntp.source_interface }}
+  frequency 60
+ip sla schedule 1 life forever start-time now
+
+ip sla 2
+  icmp-echo 192.168.100.1 source-interface {{ ntp.source_interface }}
+  frequency 30
+ip sla schedule 2 life forever start-time now
+{% endif %}
+
+! EEM (Embedded Event Manager) for Automated Response
+!
+{% if device_os.lower() != 'nxos' %}
+event manager applet INTERFACE-DOWN
+  event syslog pattern "Interface .* changed state to down"
+  action 1.0 cli command "enable"
+  action 2.0 cli command "show interface status"
+  action 3.0 mail server "192.168.100.200" to "netops@company.com" from "{{ device_name }}@company.com" subject "Interface Down Alert" body "$_syslog_msg"
+
+event manager applet HIGH-CPU
+  event snmp oid 1.3.6.1.4.1.9.2.1.56.0 get-type exact entry-op gt entry-val 80 poll-interval 60
+  action 1.0 cli command "enable"
+  action 2.0 cli command "show processes cpu sorted"
+  action 3.0 syslog msg "High CPU utilization detected on {{ device_name }}"
+{% endif %}
+
+! ERSPAN for Remote Monitoring
+!
+{% if device_os.lower() == 'nxos' %}
+monitor session 10 type erspan-source
+  source interface ethernet1/1-10 both
+  destination
+    erspan-id 101
+    ip address 192.168.100.200
+    origin ip address {{ ansible_host }}
+  no shut
+{% endif %}
+
+! Simple Network Management Protocol (SNMP) Traps
+!
+snmp-server enable traps snmp authentication linkdown linkup coldstart warmstart
+snmp-server enable traps entity
+snmp-server enable traps cpu threshold
+snmp-server enable traps memory bufferpeak
+snmp-server enable traps config
+snmp-server enable traps hsrp
+snmp-server enable traps ospf state-change
+snmp-server enable traps bgp
+{% if device_os.lower() == 'nxos' %}
+snmp-server enable traps license
+snmp-server enable traps feature-control
+{% endif %}
+
+! Health Monitoring Dashboard URLs (for reference)
+!
+! Prometheus Metrics: http://{{ ansible_host }}:9100/metrics
+! SNMP Walk: snmpwalk -v3 -u {{ snmp.users[0].name }} -A {{ snmp.users[0].auth_password }} -X {{ snmp.users[0].priv_password }} {{ ansible_host }}
+! NetFlow Collector: nfcapd -w -D -p {{ netflow.port }} -l /var/log/netflow
+
+! Monitoring Show Commands (for reference)
+!
+! show processes cpu
+! show memory summary
+! show interface counters
+! show logging
+! show ntp status
+! show ip sla statistics
+! show monitor session all
+!

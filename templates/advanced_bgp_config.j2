@@ -1,0 +1,209 @@
+! Advanced BGP Configuration Template
+! Device: {{ device_name }} ({{ device_role.upper() }}) - {{ device_os.upper() }}
+!
+{% if device_os.lower() == 'nxos' %}
+! === NX-OS BGP Configuration ===
+!
+feature bgp
+feature interface-vlan
+!
+! BGP Global Configuration
+router bgp {{ bgp_asn }}
+  router-id {{ router_id }}
+  bestpath as-path multipath-relax
+  bestpath compare-routerid
+  bestpath med confed missing-as-worst
+  reconnect-interval 12
+  log-neighbor-changes
+  graceful-restart restart-time 120
+  graceful-restart stalepath-time 300
+  
+  ! BGP confederation (if needed)
+  ! confederation identifier 65000
+  ! confederation peers 65001 65002
+  
+  ! Address Family IPv4 Unicast
+  address-family ipv4 unicast
+    redistribute ospf {{ ospf_process_id }} route-map OSPF-TO-BGP
+    redistribute direct route-map CONNECTED-TO-BGP
+    maximum-paths 8
+    maximum-paths ibgp 8
+    distance bgp 20 200 200
+    
+    ! BGP dampening
+    dampening 15 750 2000 60
+    
+  ! Address Family L2VPN EVPN (for VXLAN)
+  {% if evpn_enabled %}
+  address-family l2vpn evpn
+    maximum-paths 8
+    maximum-paths ibgp 8
+    retain route-target all
+  {% endif %}
+  
+  ! BGP Templates for peer groups
+  {% if route_reflector %}
+  template peer LEAF-PEERS
+    remote-as {{ bgp_asn }}
+    update-source loopback0
+    timers 3 9
+    {% if authentication.enabled %}
+    password {{ authentication.key }}
+    {% endif %}
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+      route-reflector-client
+      soft-reconfiguration inbound
+      maximum-prefix 1000 85 restart 5
+    {% if evpn_enabled %}
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+    {% endif %}
+  
+  template peer SPINE-PEERS
+    remote-as {{ bgp_asn }}
+    update-source loopback0
+    timers 3 9
+    {% if authentication.enabled %}
+    password {{ authentication.key }}
+    {% endif %}
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+      soft-reconfiguration inbound
+    {% if evpn_enabled %}
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+    {% endif %}
+  {% else %}
+  template peer SPINE-PEERS
+    remote-as {{ bgp_asn }}
+    update-source loopback0
+    timers 3 9
+    {% if authentication.enabled %}
+    password {{ authentication.key }}
+    {% endif %}
+    address-family ipv4 unicast
+      send-community
+      send-community extended
+      soft-reconfiguration inbound
+    {% if evpn_enabled %}
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+    {% endif %}
+  {% endif %}
+  
+  ! BGP Neighbors
+  {% for neighbor in neighbors %}
+  neighbor {{ neighbor.ip }}
+    description {{ neighbor.desc }}
+    {% if 'SPINE' in neighbor.desc.upper() %}
+    inherit peer SPINE-PEERS
+    {% elif 'LEAF' in neighbor.desc.upper() %}
+    inherit peer LEAF-PEERS
+    {% endif %}
+  {% endfor %}
+
+{% else %}
+! === IOS BGP Configuration ===
+!
+router bgp {{ bgp_asn }}
+  bgp router-id {{ router_id }}
+  bgp log-neighbor-changes
+  bgp bestpath as-path multipath-relax
+  bgp bestpath compare-routerid
+  bgp bestpath med missing-as-worst
+  bgp graceful-restart restart-time 120
+  bgp graceful-restart stalepath-time 300
+  
+  ! Maximum paths
+  maximum-paths 8
+  maximum-paths ibgp 8
+  
+  ! BGP dampening
+  bgp dampening 15 750 2000 60
+  
+  ! Redistribution
+  redistribute ospf {{ ospf_process_id }} route-map OSPF-TO-BGP
+  redistribute connected route-map CONNECTED-TO-BGP
+  
+  ! BGP Neighbors
+  {% for neighbor in neighbors %}
+  neighbor {{ neighbor.ip }} remote-as {{ neighbor.asn }}
+  neighbor {{ neighbor.ip }} description {{ neighbor.desc }}
+  neighbor {{ neighbor.ip }} update-source Loopback0
+  neighbor {{ neighbor.ip }} timers 3 9
+  {% if authentication.enabled %}
+  neighbor {{ neighbor.ip }} password {{ authentication.key }}
+  {% endif %}
+  neighbor {{ neighbor.ip }} send-community
+  neighbor {{ neighbor.ip }} send-community extended
+  neighbor {{ neighbor.ip }} soft-reconfiguration inbound
+  neighbor {{ neighbor.ip }} maximum-prefix 1000 85 restart 5
+  {% if route_reflector and 'LEAF' in neighbor.desc.upper() %}
+  neighbor {{ neighbor.ip }} route-reflector-client
+  {% endif %}
+  {% endfor %}
+
+{% endif %}
+
+! Prefix Lists
+{% for prefix_list in prefix_lists %}
+ip prefix-list {{ prefix_list.name }} description {{ prefix_list.name }} Networks
+{% for entry in prefix_list.entries %}
+ip prefix-list {{ prefix_list.name }} permit {{ entry }}
+{% endfor %}
+!
+{% endfor %}
+
+! Route Maps
+route-map OSPF-TO-BGP permit 10
+  match ip address prefix-list LOOPBACKS
+  set origin igp
+  set local-preference 200
+  set community 65000:100
+!
+route-map OSPF-TO-BGP permit 20
+  match ip address prefix-list SERVER-NETWORKS
+  set origin igp
+  set local-preference 150
+  set community 65000:200
+!
+route-map OSPF-TO-BGP deny 30
+!
+route-map CONNECTED-TO-BGP permit 10
+  match ip address prefix-list LOOPBACKS
+  set origin igp
+  set local-preference 200
+  set community 65000:100
+!
+route-map CONNECTED-TO-BGP deny 20
+!
+route-map BGP-TO-OSPF permit 10
+  set metric 100
+  set metric-type type-2
+!
+
+! Community Lists
+ip community-list standard INTERNAL permit 65000:100
+ip community-list standard CUSTOMER permit 65000:200
+ip community-list standard TRANSIT permit 65000:300
+!
+
+! BGP optimization and security
+{% if device_os.lower() == 'nxos' %}
+! Additional NX-OS BGP features
+bgp enforce-first-as
+bgp fast-external-fallover
+bgp nexthop trigger enable
+bgp nexthop trigger delay 5
+{% else %}
+! Additional IOS BGP features
+bgp fast-external-fallover
+no bgp default ipv4-unicast
+{% endif %}
