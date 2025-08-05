@@ -13,7 +13,18 @@
 
 ### 🏗️ **Clos Network Architecture**
 ```
-       <img width="1177" height="853" alt="image" src="https://github.com/user-attachments/assets/65a6ab77-8faf-4448-bb52-97676224c409" />
+       SPINE1 (192.168.100.11)    SPINE2 (192.168.100.10)
+              |         |              |         |         
+              |    NX-OS 9000         |    NX-OS 9000
+              |    admin/cisco123     |    admin/Cisco123
+              |         |              |         |
+        +-----+---------+--------------+---------+-----+
+        |     |         |              |         |     |
+        |     |         |              |         |     |
+   LEAF1      LEAF2     LEAF3          LEAF4
+(192.168.100.12) (192.168.100.13) (192.168.100.14) (192.168.100.15)
+   IOS-v        IOS-v      IOS-v        IOS-v
+admin/cisco123 admin/cisco123 admin/cisco123 admin/cisco123
 
 ```
 
