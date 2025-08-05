@@ -1,0 +1,75 @@
+# Development Environment Configuration
+# Overrides and additions to base configuration for development
+
+# API Configuration (Development overrides)
+api:
+  debug: true
+  reload: true
+  log_requests: true
+
+# MCP Server Configuration
+mcp:
+  debug: true
+  log_level: "DEBUG"
+
+# Monitoring Configuration
+monitoring:
+  logging:
+    level: "DEBUG"
+    console_output: true
+  health_checks:
+    detailed_status: true
+  metrics:
+    detailed_metrics: true
+
+# Logging Configuration  
+logging:
+  level: "DEBUG"
+  console_output: true
+  file_output: false
+
+# Database Configuration (Development)
+database:
+  echo_sql: true
+  create_tables: true
+
+# Network Configuration (Development)
+network:
+  device_timeout: 10  # Shorter timeout for development
+  mock_devices: true
+  simulation_mode: true
+
+# Security Configuration (Relaxed for development)
+security:
+  authentication:
+    enabled: false  # Disable auth for local development
+  encryption:
+    enabled: false  # Disable encryption for local development
+
+# Development Tools
+development:
+  auto_reload: true
+  debug_toolbar: true
+  profiling: true
+  mock_external_apis: true
+
+# Testing Configuration
+testing:
+  enabled: true
+  mock_devices: true
+  test_data_path: "tests/data"
+
+# Backup Configuration (Development)
+backup:
+  enabled: false  # Disable scheduled backups in development
+
+# Cache Configuration
+cache:
+  enabled: false  # Disable caching for development
+  ttl: 60
+
+# External Services (Development)
+external_services:
+  timeout: 5
+  retry_count: 1
+  mock_responses: true

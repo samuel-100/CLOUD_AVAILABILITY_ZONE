@@ -1,0 +1,39 @@
+2025-07-31 02:51:38,285 INFO Output directory: /opt/network-automation/CLOUD_AVAILABILITY_ZONE/services/../logs/running-configs
+2025-07-31 02:51:38,288 INFO Loaded 6 devices from topology
+2025-07-31 02:51:38,288 INFO Connecting to SPINE1 (192.168.100.11)...
+2025-07-31 02:51:38,485 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-31 02:51:38,635 INFO Auth banner: b'User Access Verification\n'
+2025-07-31 02:51:38,636 INFO Authentication (password) successful!
+2025-07-31 02:51:39,866 INFO Collecting running-config from SPINE1...
+2025-07-31 02:51:40,604 INFO Saved running-config for SPINE1 to /opt/network-automation/CLOUD_AVAILABILITY_ZONE/services/../logs/running-configs/SPINE1_running-config.txt
+2025-07-31 02:51:40,615 INFO Connecting to SPINE2 (192.168.100.10)...
+2025-07-31 02:51:40,820 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-31 02:51:40,977 INFO Auth banner: b'User Access Verification\n'
+2025-07-31 02:51:40,978 INFO Authentication (password) successful!
+2025-07-31 02:51:42,203 INFO Collecting running-config from SPINE2...
+2025-07-31 02:51:42,891 INFO Saved running-config for SPINE2 to /opt/network-automation/CLOUD_AVAILABILITY_ZONE/services/../logs/running-configs/SPINE2_running-config.txt
+2025-07-31 02:51:42,902 INFO Connecting to LEAF1 (192.168.100.12)...
+2025-07-31 02:51:42,920 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-31 02:51:43,226 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-31 02:51:43,237 INFO Authentication (password) successful!
+2025-07-31 02:51:43,930 INFO Collecting running-config from LEAF1...
+2025-07-31 02:51:46,524 INFO Saved running-config for LEAF1 to /opt/network-automation/CLOUD_AVAILABILITY_ZONE/services/../logs/running-configs/LEAF1_running-config.txt
+2025-07-31 02:51:46,534 INFO Connecting to LEAF2 (192.168.100.13)...
+2025-07-31 02:51:46,550 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-31 02:51:46,863 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-31 02:51:46,875 INFO Authentication (password) successful!
+2025-07-31 02:51:47,568 INFO Collecting running-config from LEAF2...
+2025-07-31 02:51:50,162 INFO Saved running-config for LEAF2 to /opt/network-automation/CLOUD_AVAILABILITY_ZONE/services/../logs/running-configs/LEAF2_running-config.txt
+2025-07-31 02:51:50,173 INFO Connecting to LEAF3 (192.168.100.14)...
+2025-07-31 02:51:50,191 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-31 02:51:50,497 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-31 02:51:50,509 INFO Authentication (password) successful!
+2025-07-31 02:51:51,203 INFO Collecting running-config from LEAF3...
+2025-07-31 02:51:53,832 INFO Saved running-config for LEAF3 to /opt/network-automation/CLOUD_AVAILABILITY_ZONE/services/../logs/running-configs/LEAF3_running-config.txt
+2025-07-31 02:51:53,842 INFO Connecting to LEAF4 (192.168.100.15)...
+2025-07-31 02:51:53,858 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-31 02:51:54,161 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-31 02:51:54,175 INFO Authentication (password) successful!
+2025-07-31 02:51:54,870 INFO Collecting running-config from LEAF4...
+2025-07-31 02:51:57,448 INFO Saved running-config for LEAF4 to /opt/network-automation/CLOUD_AVAILABILITY_ZONE/services/../logs/running-configs/LEAF4_running-config.txt
+2025-07-31 02:51:57,469 INFO Configuration collection completed. Success: 6, Failed: 0

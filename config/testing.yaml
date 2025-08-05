@@ -1,0 +1,84 @@
+# Testing Environment Configuration
+# Configuration for automated testing and CI/CD pipelines
+
+# API Configuration (Testing)
+api:
+  debug: true
+  port: 8081  # Different port to avoid conflicts
+  timeout: 10
+
+# MCP Server Configuration
+mcp:
+  port: 3001  # Different port for testing
+  debug: true
+  log_level: "DEBUG"
+
+# Monitoring Configuration (Testing)
+monitoring:
+  prometheus:
+    port: 8001  # Different port for testing
+  health_checks:
+    port: 8082  # Different port for testing
+  logging:
+    level: "DEBUG"
+    console_output: true
+    file_output: false
+
+# Database Configuration (Testing)
+database:
+  type: "sqlite"
+  path: ":memory:"  # In-memory database for testing
+  echo_sql: false
+  create_tables: true
+
+# Network Configuration (Testing)
+network:
+  device_timeout: 5
+  mock_devices: true
+  simulation_mode: true
+  test_mode: true
+
+# Security Configuration (Disabled for testing)
+security:
+  authentication:
+    enabled: false
+  encryption:
+    enabled: false
+  authorization:
+    enabled: false
+
+# Testing Configuration
+testing:
+  enabled: true
+  parallel_execution: true
+  test_data_cleanup: true
+  mock_external_services: true
+  coverage_reporting: true
+  performance_testing: true
+
+# Backup Configuration (Disabled for testing)
+backup:
+  enabled: false
+
+# Cache Configuration (Testing)
+cache:
+  enabled: false  # Disable caching for consistent test results
+
+# External Services (Testing)
+external_services:
+  timeout: 2
+  retry_count: 1
+  mock_responses: true
+
+# Resource Limits (Testing)
+resources:
+  memory_limit: "512Mi"
+  cpu_limit: "250m"
+
+# Feature Flags (Testing)
+features:
+  ai_integration: false  # Disable AI for faster tests
+  auto_remediation: false
+  advanced_analytics: false
+  config_validation: true
+  workflow_automation: true

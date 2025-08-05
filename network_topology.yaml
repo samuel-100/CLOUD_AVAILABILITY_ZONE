@@ -1,0 +1,298 @@
+topology:
+  devices:
+    # SPINE1
+    - name: SPINE1
+      role: spine
+      os: nxos
+      mgmt_ip: 192.168.100.11
+      loopback:
+        ip: 10.0.0.1
+      vlans:
+        - {id: 100, name: Web-Servers}
+        - {id: 200, name: App-Servers}
+        - {id: 300, name: DB-Servers}
+      interfaces:
+        - {name: ethernet1/1, description: P2P-Link-to-LEAF1, ip: 10.100.100.1/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/2, description: P2P-Link-to-LEAF3, ip: 10.100.100.5/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/3, description: P2P-Link-to-LEAF4, ip: 10.100.100.9/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/4, description: P2P-Link-to-LEAF2, ip: 10.100.100.13/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/5, description: Management-to-Cloud, ip: 192.168.100.1/24, switchport: false, ospf_area: 0, ospf_bfd: true, hsrp: {group: 100, ip: 192.168.100.254, priority: 110, preempt: true}}
+        - {name: loopback0, ip: 1.1.1.1/32, ospf_area: 0}
+      svis:
+        - {vlan_id: 100, description: Web-Servers-Gateway, ip: 192.168.100.2/24, hsrp_ip: 192.168.100.1, priority: 110}
+        - {vlan_id: 200, description: App-Servers-Gateway, ip: 192.168.200.2/24, hsrp_ip: 192.168.200.1, priority: 110}
+        - {vlan_id: 300, description: DB-Servers-Gateway, ip: 192.168.30.2/24, hsrp_ip: 192.168.30.1, priority: 110}
+      ospf:
+        process_id: 1
+        router_id: 1.1.1.1
+        bfd: true
+        passive_interfaces: [vlan100, vlan200, vlan300]
+      bgp:
+        asn: 65000
+        router_id: 1.1.1.1
+        neighbors:
+          - {ip: 11.11.11.11, asn: 65000, desc: LEAF1, update_source: loopback0, rr_client: true}
+          - {ip: 12.12.12.12, asn: 65000, desc: LEAF2, update_source: loopback0, rr_client: true}
+          - {ip: 13.13.13.13, asn: 65000, desc: LEAF3, update_source: loopback0, rr_client: true}
+          - {ip: 14.14.14.14, asn: 65000, desc: LEAF4, update_source: loopback0, rr_client: true}
+          - {ip: 2.2.2.2, asn: 65000, desc: SPINE2, update_source: loopback0}
+      bfd:
+        interval: 300
+        min_rx: 300
+        multiplier: 3
+      route_maps:
+        - {name: SERVER-NETWORKS, match_interfaces: [vlan100, vlan200, vlan300]}
+        - {name: LOOPBACKS, match_interfaces: [loopback0]}
+      ssh:
+        username: admin
+        password: cisco123
+      static_routes:
+        - {network: 0.0.0.0/0, next_hop: 192.168.100.1}
+
+    # SPINE2
+    - name: SPINE2
+      role: spine
+      os: nxos
+      mgmt_ip: 192.168.100.10
+      loopback:
+        ip: 10.0.0.2
+      vlans:
+        - {id: 100, name: Web-Servers}
+        - {id: 200, name: App-Servers}
+        - {id: 300, name: DB-Servers}
+      interfaces:
+        - {name: ethernet1/1, description: P2P-Link-to-LEAF1, ip: 10.100.100.17/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/2, description: P2P-Link-to-LEAF3, ip: 10.100.100.21/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/3, description: P2P-Link-to-LEAF4, ip: 10.100.100.25/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/4, description: P2P-Link-to-LEAF2, ip: 10.100.100.29/30, switchport: false, ospf_area: 0, ospf_bfd: true}
+        - {name: ethernet1/5, description: Management-to-Cloud, ip: 192.168.100.2/24, switchport: false, ospf_area: 0, ospf_bfd: true, hsrp: {group: 100, ip: 192.168.100.254, priority: 100, preempt: true}}
+        - {name: loopback0, ip: 2.2.2.2/32, ospf_area: 0}
+      svis:
+        - {vlan_id: 100, description: Web-Servers-Gateway, ip: 192.168.100.3/24, hsrp_ip: 192.168.100.1, priority: 100}
+        - {vlan_id: 200, description: App-Servers-Gateway, ip: 192.168.200.3/24, hsrp_ip: 192.168.200.1, priority: 100}
+        - {vlan_id: 300, description: DB-Servers-Gateway, ip: 192.168.30.3/24, hsrp_ip: 192.168.30.1, priority: 100}
+      ospf:
+        process_id: 1
+        router_id: 2.2.2.2
+        bfd: true
+        passive_interfaces: [vlan100, vlan200, vlan300]
+        networks:
+          - {address: 10.100.100.17, wildcard: 0.0.0.3, area: 0}
+          - {address: 10.100.100.21, wildcard: 0.0.0.3, area: 0}
+          - {address: 10.100.100.25, wildcard: 0.0.0.3, area: 0}
+          - {address: 10.100.100.29, wildcard: 0.0.0.3, area: 0}
+          - {address: 192.168.100.2, wildcard: 0.0.0.255, area: 0}
+          - {address: 2.2.2.2, wildcard: 0.0.0.0, area: 0}
+      bgp:
+        asn: 65000
+        router_id: 2.2.2.2
+        neighbors:
+          - {ip: 11.11.11.11, asn: 65000, desc: LEAF1, update_source: loopback0, rr_client: true}
+          - {ip: 12.12.12.12, asn: 65000, desc: LEAF2, update_source: loopback0, rr_client: true}
+          - {ip: 13.13.13.13, asn: 65000, desc: LEAF3, update_source: loopback0, rr_client: true}
+          - {ip: 14.14.14.14, asn: 65000, desc: LEAF4, update_source: loopback0, rr_client: true}
+          - {ip: 1.1.1.1, asn: 65000, desc: SPINE1, update_source: loopback0}
+      bfd:
+        interval: 300
+        min_rx: 300
+        multiplier: 3
+      route_maps:
+        - {name: SERVER-NETWORKS, match_interfaces: [vlan100, vlan200, vlan300]}
+        - {name: LOOPBACKS, match_interfaces: [loopback0]}
+      ssh:
+        username: admin
+        password: Cisco123
+      static_routes:
+        - {network: 0.0.0.0/0, next_hop: 192.168.100.1}
+
+    # LEAF1
+    - name: LEAF1
+      role: leaf
+      os: iosv
+      mgmt_ip: 192.168.100.12
+      vlans:
+        - {id: 100, name: Web-Servers}
+        - {id: 200, name: App-Servers}
+        - {id: 300, name: DB-Servers}
+      interfaces:
+        - {name: ethernet1/1, ip: 10.100.100.2/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: ethernet1/2, ip: 10.100.100.18/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: GigabitEthernet0/0, switchport: true, mode: access, ip: 10.1.1.1/24, hsrp: {group: 1, ip: 10.1.1.254, priority: 110, preempt: true}}
+        - {name: GigabitEthernet0/1, switchport: true, mode: access, ip: 10.1.2.1/24, hsrp: {group: 2, ip: 10.1.2.254, priority: 100, preempt: true}}
+        - {name: loopback0, ip: 11.11.11.11/32, ospf_area: 0, ospf_process: 1}
+      interface_ranges:
+        - {range: "GigabitEthernet1/3 - 7", switchport: true, access_vlan: 100, portfast: true, shutdown: true}
+      stp_vlans: [100,200,300]
+      stp_priority: 32768
+      ssh:
+        domain: lab.local
+        username: admin
+        password: cisco123
+      ospf:
+        process_id: 1
+        router_id: 11.11.11.11
+        bfd_all_interfaces: true
+        networks:
+          - {address: 10.100.100.2, wildcard: 0.0.0.3, area: 0}
+          - {address: 10.100.100.18, wildcard: 0.0.0.3, area: 0}
+          - {address: 192.168.100.12, wildcard: 0.0.0.255, area: 0}
+          - {address: 11.11.11.11, wildcard: 0.0.0.0, area: 0}
+      bgp:
+        asn: 65000
+        router_id: 11.11.11.11
+        neighbors:
+          - {ip: 1.1.1.1, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+          - {ip: 2.2.2.2, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+        address_family_ipv4:
+          activate: [1.1.1.1, 2.2.2.2]
+          networks:
+            - {network: 10.1.1.0, mask: 255.255.255.0}
+            - {network: 10.1.2.0, mask: 255.255.255.0}
+            - {network: 11.11.11.11, mask: 255.255.255.255}
+      track:
+        - {id: 1, interface: ethernet1/1, type: line-protocol}
+        - {id: 2, interface: ethernet1/2, type: line-protocol}
+      static_routes:
+        - {network: 0.0.0.0 0.0.0.0, next_hop: 10.100.100.1}
+        - {network: 10.128.0.0 255.255.255.0, next_hop: 10.100.100.1}
+
+    # LEAF2
+    - name: LEAF2
+      role: leaf
+      os: iosv
+      mgmt_ip: 192.168.100.13
+      vlans:
+        - {id: 100, name: Web-Servers}
+        - {id: 200, name: App-Servers}
+        - {id: 300, name: DB-Servers}
+      interfaces:
+        - {name: ethernet1/1, ip: 10.100.100.30/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: ethernet1/2, ip: 10.100.100.22/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: GigabitEthernet0/0, switchport: true, mode: access, ip: 10.1.7.1/24, hsrp: {group: 7, ip: 10.1.7.254, priority: 110, preempt: true}}
+        - {name: GigabitEthernet0/1, switchport: true, mode: access, ip: 10.1.8.1/24, hsrp: {group: 8, ip: 10.1.8.254, priority: 100, preempt: true}}
+        - {name: loopback0, ip: 14.14.14.14/32, ospf_area: 0, ospf_process: 1}
+      interface_ranges:
+        - {range: "GigabitEthernet1/3 - 7", switchport: true, access_vlan: 200, portfast: true, shutdown: true}
+      stp_vlans: [100,200,300]
+      stp_priority: 32768
+      ssh:
+        domain: lab.local
+        username: admin
+        password: cisco123
+      ospf:
+        process_id: 1
+        router_id: 14.14.14.14
+        bfd_all_interfaces: true
+        networks:
+          - {address: 10.100.100.30, wildcard: 0.0.0.3, area: 0}
+          - {address: 10.100.100.22, wildcard: 0.0.0.3, area: 0}
+      bgp:
+        asn: 65000
+        router_id: 14.14.14.14
+        neighbors:
+          - {ip: 1.1.1.1, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+          - {ip: 2.2.2.2, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+        address_family_ipv4:
+          activate: [1.1.1.1, 2.2.2.2]
+          networks:
+            - {network: 10.1.7.0, mask: 255.255.255.0}
+            - {network: 10.1.8.0, mask: 255.255.255.0}
+      track:
+        - {id: 1, interface: ethernet1/1, type: line-protocol}
+        - {id: 2, interface: ethernet1/2, type: line-protocol}
+      static_routes:
+        - {network: 0.0.0.0 0.0.0.0, next_hop: 10.100.100.14}
+
+    # LEAF3
+    - name: LEAF3
+      role: leaf
+      os: iosv
+      mgmt_ip: 192.168.100.14
+      vlans:
+        - {id: 100, name: Web-Servers}
+        - {id: 200, name: App-Servers}
+        - {id: 300, name: DB-Servers}
+      interfaces:
+        - {name: ethernet1/1, ip: 10.100.100.10/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: ethernet1/2, ip: 10.100.100.26/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: GigabitEthernet0/0, switchport: true, mode: access, ip: 10.1.5.1/24, hsrp: {group: 5, ip: 10.1.5.254, priority: 100, preempt: true}}
+        - {name: GigabitEthernet1/0, switchport: true, mode: access, ip: 10.1.6.1/24, hsrp: {group: 6, ip: 10.1.6.254, priority: 110, preempt: true}}
+        - {name: loopback0, ip: 13.13.13.13/32, ospf_area: 0, ospf_process: 1}
+      interface_ranges:
+        - {range: "GigabitEthernet1/3 - 7", switchport: true, access_vlan: 100, portfast: true, shutdown: true}
+      stp_vlans: [100,200,300]
+      stp_priority: 32768
+      ssh:
+        domain: lab.local
+        username: admin
+        password: cisco123
+      ospf:
+        process_id: 1
+        router_id: 13.13.13.13
+        bfd_all_interfaces: true
+        networks:
+          - {address: 10.100.100.10, wildcard: 0.0.0.3, area: 0}
+          - {address: 10.100.100.26, wildcard: 0.0.0.3, area: 0}
+      bgp:
+        asn: 65000
+        router_id: 13.13.13.13
+        neighbors:
+          - {ip: 1.1.1.1, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+          - {ip: 2.2.2.2, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+        address_family_ipv4:
+          activate: [1.1.1.1, 2.2.2.2]
+          networks:
+            - {network: 10.1.5.0, mask: 255.255.255.0}
+            - {network: 10.1.6.0, mask: 255.255.255.0}
+      track:
+        - {id: 1, interface: ethernet1/1, type: line-protocol}
+        - {id: 2, interface: ethernet1/2, type: line-protocol}
+      static_routes:
+        - {network: 0.0.0.0 0.0.0.0, next_hop: 10.100.100.10}
+
+    # LEAF4
+    - name: LEAF4
+      role: leaf
+      os: iosv
+      mgmt_ip: 192.168.100.15
+      vlans:
+        - {id: 100, name: Web-Servers}
+        - {id: 200, name: App-Servers}
+        - {id: 300, name: DB-Servers}
+      interfaces:
+        - {name: ethernet1/1, ip: 10.100.100.6/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: ethernet1/2, ip: 10.100.100.14/30, switchport: false, ospf_area: 0, ospf_process: 1, bfd: {interval: 300, min_rx: 300, multiplier: 3}}
+        - {name: GigabitEthernet0/0, switchport: true, mode: access, ip: 10.1.3.1/24, hsrp: {group: 3, ip: 10.1.3.254, priority: 100, preempt: true}}
+        - {name: GigabitEthernet1/0, switchport: true, mode: access, ip: 10.1.4.1/24, hsrp: {group: 4, ip: 10.1.4.254, priority: 110, preempt: true}}
+        - {name: loopback0, ip: 12.12.12.12/32, ospf_area: 0, ospf_process: 1}
+      interface_ranges:
+        - {range: "GigabitEthernet1/3 - 7", switchport: true, access_vlan: 100, portfast: true, shutdown: true}
+      stp_vlans: [100,200,300]
+      stp_priority: 32768
+      ssh:
+        domain: lab.local
+        username: admin
+        password: cisco123
+      ospf:
+        process_id: 1
+        router_id: 12.12.12.12
+        bfd_all_interfaces: true
+        networks:
+          - {address: 10.100.100.6, wildcard: 0.0.0.3, area: 0}
+          - {address: 10.100.100.14, wildcard: 0.0.0.3, area: 0}
+      bgp:
+        asn: 65000
+        router_id: 12.12.12.12
+        neighbors:
+          - {ip: 1.1.1.1, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+          - {ip: 2.2.2.2, asn: 65000, update_source: loopback0, fall_over_bfd: true}
+        address_family_ipv4:
+          activate: [1.1.1.1, 2.2.2.2]
+          networks:
+            - {network: 10.1.3.0, mask: 255.255.255.0}
+            - {network: 10.1.4.0, mask: 255.255.255.0}
+      track:
+        - {id: 1, interface: ethernet1/1, type: line-protocol}
+        - {id: 2, interface: ethernet1/2, type: line-protocol}
+      static_routes:
+        - {network: 0.0.0.0 0.0.0.0, next_hop: 10.100.100.6}

@@ -1,0 +1,231 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: network-automation
+  labels:
+    name: network-automation
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-automation-config
+  namespace: network-automation
+data:
+  api_config.py: |
+    # API Configuration
+    API_HOST = "0.0.0.0"
+    API_PORT = 8080
+    DEBUG = False
+    
+  monitoring.yaml: |
+    prometheus:
+      enabled: true
+      port: 8000
+    
+    health_checks:
+      enabled: true
+      interval_seconds: 30
+    
+    logging:
+      structured: true
+      correlation_ids: true
+      distributed_tracing: true
+      levels:
+        root: INFO
+        network_automation: INFO
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: network-automation-secrets
+  namespace: network-automation
+type: Opaque
+data:
+  # Base64 encoded secrets
+  # echo -n "your-api-key" | base64
+  api_key: eW91ci1hcGkta2V5  # your-api-key
+  redis_password: bmV0YXV0bzEyMw==  # netauto123
+  admin_password: YWRtaW4xMjM=  # admin123
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: network-automation-data
+  namespace: network-automation
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd  # Adjust based on your cluster
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: network-automation-logs
+  namespace: network-automation
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-automation-mcp
+  namespace: network-automation
+  labels:
+    app: network-automation-mcp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: network-automation-mcp
+  template:
+    metadata:
+      labels:
+        app: network-automation-mcp
+    spec:
+      containers:
+      - name: network-automation
+        image: network-automation:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: metrics
+        - containerPort: 8080
+          name: health
+        - containerPort: 8443
+          name: mcp
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: PROMETHEUS_ENABLED
+          value: "true"
+        - name: PROMETHEUS_PORT
+          value: "8000"
+        - name: HEALTH_CHECK_PORT
+          value: "8080"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: network-automation-secrets
+              key: api_key
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: network-automation-secrets
+              key: redis_password
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: logs-volume
+          mountPath: /app/logs
+        - name: config-volume
+          mountPath: /app/config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: network-automation-data
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: network-automation-logs
+      - name: config-volume
+        configMap:
+          name: network-automation-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: network-automation-service
+  namespace: network-automation
+  labels:
+    app: network-automation-mcp
+spec:
+  selector:
+    app: network-automation-mcp
+  ports:
+  - name: metrics
+    port: 8000
+    targetPort: 8000
+  - name: health
+    port: 8080
+    targetPort: 8080
+  - name: mcp
+    port: 8443
+    targetPort: 8443
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: network-automation-ingress
+  namespace: network-automation
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - network-automation.yourdomain.com
+    secretName: network-automation-tls
+  rules:
+  - host: network-automation.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: network-automation-service
+            port:
+              number: 8080
+      - path: /metrics
+        pathType: Prefix
+        backend:
+          service:
+            name: network-automation-service
+            port:
+              number: 8000
+---
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: network-automation-metrics
+  namespace: network-automation
+  labels:
+    app: network-automation-mcp
+spec:
+  selector:
+    matchLabels:
+      app: network-automation-mcp
+  endpoints:
+  - port: metrics
+    interval: 15s
+    path: /metrics

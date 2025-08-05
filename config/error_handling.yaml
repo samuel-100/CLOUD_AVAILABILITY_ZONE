@@ -1,0 +1,334 @@
+# Error Handling and Recovery Configuration
+
+# Retry Policies for different operation types
+retry_policies:
+  network_operations:
+    max_retries: 5
+    base_delay: 2.0
+    max_delay: 120.0
+    exponential_backoff: true
+    jitter: true
+    retryable_errors:
+      - "network"
+      - "timeout" 
+      - "device"
+  
+  authentication:
+    max_retries: 3
+    base_delay: 1.0
+    max_delay: 30.0
+    exponential_backoff: true
+    jitter: false
+    retryable_errors:
+      - "authentication"
+      - "timeout"
+  
+  configuration:
+    max_retries: 2
+    base_delay: 5.0
+    max_delay: 60.0
+    exponential_backoff: true
+    jitter: true
+    retryable_errors:
+      - "configuration"
+      - "validation"
+  
+  device_management:
+    max_retries: 4
+    base_delay: 3.0
+    max_delay: 90.0
+    exponential_backoff: true
+    jitter: true
+    retryable_errors:
+      - "device"
+      - "network"
+      - "timeout"
+  
+  protocol_operations:
+    max_retries: 3
+    base_delay: 2.0
+    max_delay: 45.0
+    exponential_backoff: true
+    jitter: true
+    retryable_errors:
+      - "protocol"
+      - "network"
+      - "timeout"
+  
+  default:
+    max_retries: 3
+    base_delay: 1.0
+    max_delay: 30.0
+    exponential_backoff: true
+    jitter: true
+    retryable_errors:
+      - "network"
+      - "timeout"
+
+# Recovery Strategies for different error types
+recovery_strategies:
+  network_error:
+    actions:
+      - "retry"
+      - "try_backup_connection"
+      - "check_network_connectivity"
+      - "escalate"
+    timeout: 300
+    escalation_threshold: 3
+    
+  authentication_error:
+    actions:
+      - "retry_with_backup_creds"
+      - "refresh_credentials"
+      - "check_account_status"
+      - "escalate"
+    timeout: 60
+    escalation_threshold: 2
+    
+  configuration_error:
+    actions:
+      - "validate_config"
+      - "rollback"
+      - "check_syntax"
+      - "manual_intervention"
+    timeout: 180
+    escalation_threshold: 1
+    
+  device_error:
+    actions:
+      - "retry"
+      - "check_device_status"
+      - "restart_device_connection"
+      - "escalate"
+    timeout: 240
+    escalation_threshold: 3
+    
+  protocol_error:
+    actions:
+      - "retry"
+      - "switch_protocol"
+      - "check_protocol_support"
+      - "escalate"
+    timeout: 120
+    escalation_threshold: 2
+    
+  timeout_error:
+    actions:
+      - "retry_with_longer_timeout"
+      - "check_network_latency"
+      - "try_backup_connection"
+      - "escalate"
+    timeout: 180
+    escalation_threshold: 3
+    
+  permission_error:
+    actions:
+      - "check_user_permissions"
+      - "try_elevated_credentials"
+      - "request_access"
+      - "manual_intervention"
+    timeout: 300
+    escalation_threshold: 1
+    
+  validation_error:
+    actions:
+      - "validate_input"
+      - "check_format"
+      - "apply_corrections"
+      - "manual_review"
+    timeout: 120
+    escalation_threshold: 1
+    
+  resource_error:
+    actions:
+      - "wait_for_resources"
+      - "cleanup_resources"
+      - "try_alternative_method"
+      - "escalate"
+    timeout: 600
+    escalation_threshold: 2
+
+# Error Severity Mapping
+severity_mapping:
+  critical_operations:
+    - "production_deploy"
+    - "firmware_upgrade"
+    - "security_config"
+    - "backup_restore"
+    
+  high_risk_devices:
+    - "SPINE1"
+    - "SPINE2"
+    - "core_router"
+    - "firewall"
+    
+  critical_errors:
+    - "SystemExit"
+    - "KeyboardInterrupt"
+    - "MemoryError"
+    - "disk_full"
+
+# Escalation Rules
+escalation:
+  enabled: true
+  
+  severity_thresholds:
+    critical: 
+      immediate: true
+      notification_methods: ["email", "sms", "slack"]
+      recipients: ["admin@company.com", "oncall@company.com"]
+    
+    high:
+      delay: 300  # 5 minutes
+      notification_methods: ["email", "slack"]
+      recipients: ["admin@company.com"]
+    
+    medium:
+      delay: 900  # 15 minutes  
+      notification_methods: ["email"]
+      recipients: ["admin@company.com"]
+    
+    low:
+      delay: 3600  # 1 hour
+      notification_methods: ["email"]
+      recipients: ["admin@company.com"]
+
+# Circuit Breaker Configuration
+circuit_breaker:
+  enabled: true
+  
+  failure_threshold: 5
+  recovery_timeout: 300
+  half_open_max_calls: 3
+  
+  monitored_operations:
+    - "device_connect"
+    - "config_push"
+    - "firmware_upgrade"
+    - "backup_operation"
+
+# Rollback Configuration
+rollback:
+  enabled: true
+  
+  auto_rollback_triggers:
+    - "configuration_error"
+    - "validation_error"
+    - "critical_failure"
+  
+  rollback_timeout: 600
+  
+  preserve_rollback_history: true
+  max_rollback_history: 100
+  
+  verification_steps:
+    - "connectivity_check"
+    - "configuration_validation"
+    - "service_status_check"
+
+# Monitoring and Alerting
+monitoring:
+  error_rate_threshold: 0.1  # 10% error rate triggers alert
+  error_spike_threshold: 5   # 5 errors in 1 minute triggers alert
+  
+  metrics_collection:
+    enabled: true
+    interval: 60  # seconds
+    
+  alert_conditions:
+    high_error_rate:
+      threshold: 0.15
+      window: 300  # 5 minutes
+      
+    critical_error_spike:
+      threshold: 3
+      window: 60   # 1 minute
+      severity: "critical"
+      
+    repeated_failures:
+      threshold: 10
+      window: 3600  # 1 hour
+      same_operation: true
+
+# Error Pattern Recognition
+error_patterns:
+  network_patterns:
+    - "connection.*refused"
+    - "timeout"
+    - "unreachable"
+    - "no route to host"
+    - "network.*unreachable"
+    
+  authentication_patterns:
+    - "authentication.*failed"
+    - "invalid.*credentials"
+    - "login.*failed"
+    - "unauthorized"
+    
+  configuration_patterns:
+    - "invalid.*configuration"
+    - "syntax.*error"
+    - "command.*not.*found"
+    - "configuration.*error"
+    
+  device_patterns:
+    - "device.*not.*found"
+    - "device.*busy"
+    - "device.*error"
+    - "hardware.*error"
+    
+  protocol_patterns:
+    - "protocol.*error"
+    - "ssh.*error"
+    - "snmp.*error"
+    - "api.*error"
+
+# Recovery Success Criteria
+recovery_criteria:
+  network_recovery:
+    tests:
+      - "ping_test"
+      - "connectivity_check"
+      - "latency_test"
+    thresholds:
+      ping_success_rate: 0.95
+      max_latency: 100  # ms
+      
+  device_recovery:
+    tests:
+      - "device_reachable"
+      - "service_status"
+      - "configuration_intact"
+    thresholds:
+      response_time: 5000  # ms
+      
+  configuration_recovery:
+    tests:
+      - "syntax_validation"
+      - "configuration_complete"
+      - "service_operational"
+    thresholds:
+      validation_score: 1.0
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  
+  formatters:
+    error_formatter:
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(error_id)s - %(message)s"
+      
+  handlers:
+    file_handler:
+      filename: "logs/error_handling.log"
+      max_bytes: 10485760  # 10MB
+      backup_count: 5
+      
+    database_handler:
+      enabled: true
+      table: "error_logs"
+      
+  audit_logging:
+    enabled: true
+    include_sensitive_data: false
+    retention_days: 365

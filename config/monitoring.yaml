@@ -1,0 +1,314 @@
+# Monitoring and Observability Configuration
+
+# Prometheus Configuration
+prometheus:
+  enabled: true
+  port: 8000
+  metrics_path: /metrics
+  scrape_interval: 15s
+  
+  # Custom metrics configuration
+  custom_metrics:
+    network_automation_requests_total:
+      type: counter
+      help: "Total number of requests to the network automation system"
+      labels: ["method", "endpoint", "status"]
+    
+    network_automation_request_duration_seconds:
+      type: histogram
+      help: "Duration of requests in seconds"
+      labels: ["method", "endpoint"]
+      buckets: [0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
+    
+    network_automation_device_status:
+      type: gauge
+      help: "Device status (1=up, 0=down)"
+      labels: ["device_name", "device_type"]
+    
+    network_automation_device_response_time_seconds:
+      type: histogram
+      help: "Device response time in seconds"
+      labels: ["device_name"]
+      buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0]
+    
+    network_automation_errors_total:
+      type: counter
+      help: "Total number of errors"
+      labels: ["error_type", "severity"]
+    
+    network_automation_cpu_usage_percent:
+      type: gauge
+      help: "CPU usage percentage"
+    
+    network_automation_memory_usage_bytes:
+      type: gauge
+      help: "Memory usage in bytes"
+    
+    network_automation_mcp_connections:
+      type: gauge
+      help: "Active MCP connections"
+    
+    network_automation_mcp_tool_calls_total:
+      type: counter
+      help: "Total MCP tool calls"
+      labels: ["tool_name", "status"]
+
+# Health Check Configuration
+health_checks:
+  enabled: true
+  interval_seconds: 30
+  endpoint: /health
+  
+  # Health check timeouts
+  timeouts:
+    database: 5
+    network: 10
+    device_connectivity: 30
+    mcp_server: 15
+  
+  # Health check thresholds
+  thresholds:
+    cpu_warning: 70
+    cpu_critical: 90
+    memory_warning: 70
+    memory_critical: 90
+    disk_warning: 70
+    disk_critical: 90
+    response_time_warning: 1.0
+    response_time_critical: 5.0
+  
+  # Custom health checks
+  custom_checks:
+    - name: "database_connectivity"
+      description: "Check database connection"
+      timeout: 5
+      critical: true
+    
+    - name: "device_reachability"
+      description: "Check network device reachability"
+      timeout: 30
+      critical: false
+      devices: ["SPINE1", "SPINE2", "LEAF1", "LEAF2", "LEAF3", "LEAF4"]
+    
+    - name: "mcp_server_status"
+      description: "Check MCP server health"
+      timeout: 15
+      critical: true
+    
+    - name: "log_directory_space"
+      description: "Check log directory disk space"
+      timeout: 5
+      critical: false
+      path: "./logs"
+      warning_threshold_mb: 1000
+      critical_threshold_mb: 100
+
+# Logging Configuration
+logging:
+  structured: true
+  correlation_ids: true
+  distributed_tracing: true
+  
+  # Log levels
+  levels:
+    root: INFO
+    network_automation: DEBUG
+    prometheus: WARNING
+    health_checks: INFO
+    tracing: DEBUG
+  
+  # Log formats
+  formats:
+    console: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file: "%(asctime)s - %(name)s - %(levelname)s - [%(correlation_id)s] - %(message)s"
+    json: true
+  
+  # Log outputs
+  outputs:
+    console:
+      enabled: true
+      level: INFO
+      format: console
+    
+    file:
+      enabled: true
+      level: DEBUG
+      format: file
+      path: "./logs/monitoring.log"
+      max_size_mb: 100
+      backup_count: 5
+      rotation: daily
+    
+    audit:
+      enabled: true
+      level: INFO
+      format: json
+      path: "./logs/audit.log"
+      max_size_mb: 50
+      backup_count: 10
+
+# Distributed Tracing Configuration
+tracing:
+  enabled: true
+  sample_rate: 1.0  # 100% sampling for development
+  
+  # Trace storage
+  storage:
+    type: sqlite
+    path: "./logs/tracing.db"
+    retention_days: 30
+  
+  # Trace export (for production)
+  export:
+    enabled: false
+    jaeger:
+      endpoint: "http://localhost:14268/api/traces"
+      agent_host: "localhost"
+      agent_port: 6831
+    
+    zipkin:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  
+  # Operation sampling rules
+  sampling_rules:
+    - operation: "device_connection"
+      sample_rate: 1.0
+    - operation: "config_deployment"
+      sample_rate: 1.0
+    - operation: "health_check"
+      sample_rate: 0.1
+    - operation: "metrics_collection"
+      sample_rate: 0.05
+
+# Alerting Configuration
+alerting:
+  enabled: true
+  
+  # Alert channels
+  channels:
+    console:
+      enabled: true
+      level: WARNING
+    
+    file:
+      enabled: true
+      level: ERROR
+      path: "./logs/alerts.log"
+    
+    webhook:
+      enabled: false
+      url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+      level: CRITICAL
+  
+  # Alert rules
+  rules:
+    - name: "high_cpu_usage"
+      condition: "cpu_usage > 90"
+      severity: CRITICAL
+      duration: "5m"
+      message: "High CPU usage detected: {{ $value }}%"
+    
+    - name: "high_memory_usage"
+      condition: "memory_usage > 90"
+      severity: CRITICAL
+      duration: "5m"
+      message: "High memory usage detected: {{ $value }}%"
+    
+    - name: "device_down"
+      condition: "device_status == 0"
+      severity: CRITICAL
+      duration: "1m"
+      message: "Device {{ $labels.device_name }} is down"
+    
+    - name: "high_error_rate"
+      condition: "error_rate > 0.1"
+      severity: WARNING
+      duration: "2m"
+      message: "High error rate detected: {{ $value }}"
+    
+    - name: "slow_response_time"
+      condition: "response_time > 5.0"
+      severity: WARNING
+      duration: "2m"
+      message: "Slow response time: {{ $value }}s"
+
+# Dashboard Configuration
+dashboard:
+  enabled: true
+  refresh_interval: 30
+  
+  # Dashboard panels
+  panels:
+    - name: "System Overview"
+      type: "overview"
+      metrics:
+        - "system_health"
+        - "active_connections"
+        - "request_rate"
+        - "error_rate"
+    
+    - name: "Device Status"
+      type: "device_grid"
+      metrics:
+        - "device_status"
+        - "device_response_time"
+        - "device_connectivity"
+    
+    - name: "Performance Metrics"
+      type: "timeseries"
+      metrics:
+        - "cpu_usage"
+        - "memory_usage"
+        - "request_duration"
+        - "throughput"
+    
+    - name: "Error Analysis"
+      type: "error_breakdown"
+      metrics:
+        - "error_count_by_type"
+        - "error_rate_by_severity"
+        - "recent_errors"
+    
+    - name: "MCP Activity"
+      type: "mcp_stats"
+      metrics:
+        - "mcp_connections"
+        - "tool_call_rate"
+        - "tool_success_rate"
+
+# Storage Configuration
+storage:
+  metrics:
+    retention_days: 7
+    aggregation_intervals: ["1m", "5m", "1h", "1d"]
+  
+  logs:
+    retention_days: 30
+    compression: gzip
+    archive_path: "./logs/archive"
+  
+  traces:
+    retention_days: 14
+    sampling_enabled: true
+    max_traces_per_day: 100000
+  
+  health_checks:
+    retention_days: 30
+    aggregation_enabled: true
+
+# Integration Configuration
+integrations:
+  grafana:
+    enabled: false
+    url: "http://localhost:3000"
+    dashboard_uid: "network-automation"
+  
+  elasticsearch:
+    enabled: false
+    hosts: ["localhost:9200"]
+    index_pattern: "network-automation-logs-*"
+  
+  external_monitoring:
+    enabled: false
+    endpoint: "https://monitoring.example.com/api/metrics"
+    api_key: "${EXTERNAL_MONITORING_API_KEY}"

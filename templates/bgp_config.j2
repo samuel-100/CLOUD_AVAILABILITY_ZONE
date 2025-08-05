@@ -1,0 +1,73 @@
+! Device-Aware BGP Configuration Template
+! Automatically selects NX-OS or IOS BGP configuration based on device name
+! Device: {{ device_name }}
+
+{% if 'SPINE' in device_name.upper() %}
+! NX-OS BGP Configuration (SPINE)
+router bgp {{ bgp_asn }}
+  router-id {{ loopback0_ip }}
+  bestpath as-path multipath-relax
+  reconnect-interval 12
+  log-neighbor-changes
+  
+  address-family ipv4 unicast
+    redistribute ospf {{ ospf_process_id }} route-map OSPF-TO-BGP
+    maximum-paths 8
+    maximum-paths ibgp 8
+  
+  address-family l2vpn evpn
+    maximum-paths 8
+    maximum-paths ibgp 8
+    retain route-target all
+  
+  template peer LEAF-PEERS
+    remote-as {{ bgp_asn }}
+    update-source loopback0
+    timers 3 9
+    address-family ipv4 unicast
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+  
+  {% for neighbor in bgp_neighbors %}
+  neighbor {{ neighbor.ip }}
+    description {{ neighbor.description }}
+    inherit peer LEAF-PEERS
+  {% endfor %}
+
+{% elif 'LEAF' in device_name.upper() %}
+! IOS BGP Configuration (LEAF)
+router bgp {{ bgp_asn }}
+  bgp router-id {{ loopback0_ip }}
+  bgp log-neighbor-changes
+  bgp bestpath as-path multipath-relax
+  
+  {% for neighbor in bgp_neighbors %}
+  neighbor {{ neighbor.ip }} remote-as {{ neighbor.asn }}
+  neighbor {{ neighbor.ip }} description {{ neighbor.description }}
+  neighbor {{ neighbor.ip }} update-source Loopback0
+  neighbor {{ neighbor.ip }} timers 3 9
+  {% endfor %}
+  
+  address-family ipv4
+    network {{ loopback0_ip }} mask 255.255.255.255
+    {% for neighbor in bgp_neighbors %}
+    neighbor {{ neighbor.ip }} activate
+    {% endfor %}
+    no auto-summary
+    maximum-paths 4
+    maximum-paths ibgp 4
+  exit-address-family
+
+{% else %}
+! Generic BGP Configuration (Unknown device type)
+router bgp {{ bgp_asn }}
+  bgp router-id {{ loopback0_ip }}
+  bgp log-neighbor-changes
+  
+  {% for neighbor in bgp_neighbors %}
+  neighbor {{ neighbor.ip }} remote-as {{ neighbor.asn }}
+  neighbor {{ neighbor.ip }} description {{ neighbor.description }}
+  {% endfor %}
+{% endif %}

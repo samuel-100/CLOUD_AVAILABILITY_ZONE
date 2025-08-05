@@ -1,0 +1,22 @@
+datacenter:
+  name: Cisco Data Center (1-Availability Zone)
+  architecture: CLOS (Leaf-Spine)
+  mgmt_subnet: 192.168.100.0/24
+  devices:
+    - SPINE1
+    - SPINE2
+    - LEAF1
+    - LEAF2
+    - LEAF3
+    - LEAF4
+  links:
+    - [SPINE1:Eth1/1, LEAF1:E1/1]
+    - [SPINE1:Eth1/2, LEAF2:E1/1]
+    - [SPINE1:Eth1/3, LEAF3:E1/1]
+    - [SPINE1:Eth1/4, LEAF4:E1/1]
+    - [SPINE2:Eth1/1, LEAF1:E1/2]
+    - [SPINE2:Eth1/2, LEAF2:E1/2]
+    - [SPINE2:Eth1/3, LEAF3:E1/2]
+    - [SPINE2:Eth1/4, LEAF4:E1/2]
+    - [SPINE1:Eth1/5, Net]
+    - [SPINE2:Eth1/5, Net]

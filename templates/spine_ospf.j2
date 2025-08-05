@@ -1,0 +1,48 @@
+! NX-OS OSPF Configuration Template for SPINE devices
+! OSPF underlay routing configuration
+
+router ospf {{ ospf_process_id }}
+  router-id {{ loopback0_ip }}
+  area {{ ospf_area }} authentication message-digest
+  log-adjacency-changes detail
+  max-lsa 12000
+  auto-cost reference-bandwidth 100000
+  
+  ! Graceful restart configuration
+  graceful-restart
+  graceful-restart grace-period 60
+  graceful-restart helper-disable
+  
+  ! Area configuration
+  area {{ ospf_area }} default-cost 1
+  
+  ! Passive interface default (secure by default)
+  passive-interface default
+  
+  ! Active interfaces (to LEAF devices)
+{% for interface in spine_interfaces %}
+  interface {{ interface.name }}
+    ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+    ip ospf network point-to-point
+    ip ospf hello-interval 1
+    ip ospf dead-interval 3
+    ip ospf message-digest-key 1 md5 {{ ospf_auth_key }}
+    no passive-interface {{ interface.name }}
+{% endfor %}
+
+  ! Loopback interfaces
+  interface loopback0
+    ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+    
+  interface loopback1
+    ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+
+! BFD for fast convergence (if supported)
+{% if bfd_enabled is defined and bfd_enabled %}
+feature bfd
+
+{% for interface in spine_interfaces %}
+interface {{ interface.name }}
+  ip ospf bfd
+{% endfor %}
+{% endif %}

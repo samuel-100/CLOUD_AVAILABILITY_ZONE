@@ -1,0 +1,41 @@
+# Environment variables with sensitive data
+.env
+.credential_key
+.credential_salt
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# PyTest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/*.log
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# Docker
+.dockerignore
+
+# Kubernetes secrets
+k8s/secrets/

@@ -1,0 +1,154 @@
+! Base Configuration Template - Device Type Aware
+! Automatically detects SPINE (NX-OS) vs LEAF (IOS) based on device name
+! Device: {{ device_name }}
+! Type: {% if 'SPINE' in device_name.upper() %}SPINE (NX-OS){% elif 'LEAF' in device_name.upper() %}LEAF (IOS){% else %}Unknown{% endif %}
+! Generated: {{ ansible_date_time.iso8601 }}
+
+{% if 'SPINE' in device_name.upper() %}
+! NX-OS Base Configuration for SPINE devices
+!
+hostname {{ device_name }}
+!
+feature telnet
+feature ssh
+!
+username {{ admin_user }} password {{ admin_password }} role network-admin
+username {{ admin_user }} sshkey {{ ssh_public_key | default('') }}
+!
+banner motd ^
+*******************************************************************************
+* WARNING: This device is managed by automation. Manual changes may be lost. *
+* Device: {{ device_name }} (NX-OS SPINE)                                    *
+* Contact: {{ contact_info | default('Network Operations') }}                 *
+*******************************************************************************
+^
+!
+! Basic system settings
+clock timezone {{ timezone | default('UTC') }} {{ timezone_offset | default('0') }} {{ timezone_offset_minutes | default('0') }}
+!
+! DNS configuration
+ip domain-name {{ domain_name }}
+{% for dns_server in dns_servers %}
+ip name-server {{ dns_server }}
+{% endfor %}
+!
+! NTP configuration
+{% for ntp_server in ntp_servers %}
+ntp server {{ ntp_server }}
+{% endfor %}
+!
+! Logging configuration
+logging server {{ syslog_server }}
+logging level local7 6
+logging timestamp milliseconds
+!
+! SNMP configuration
+snmp-server community {{ snmp_ro_community | default('public') }} group network-operator
+snmp-server community {{ snmp_rw_community | default('private') }} group network-admin
+snmp-server host {{ snmp_server }} traps version 2c {{ snmp_ro_community | default('public') }}
+!
+
+{% elif 'LEAF' in device_name.upper() %}
+! IOS Base Configuration for LEAF devices
+!
+hostname {{ device_name }}
+!
+enable secret {{ enable_secret }}
+!
+banner motd ^
+*******************************************************************************
+* WARNING: This device is managed by automation. Manual changes may be lost. *
+* Device: {{ device_name }} (IOS LEAF)                                       *
+* Contact: {{ contact_info | default('Network Operations') }}                 *
+*******************************************************************************
+^
+!
+! AAA configuration
+aaa new-model
+aaa authentication login default local
+aaa authorization exec default local
+!
+! Local users
+username {{ admin_user }} privilege 15 secret {{ admin_password }}
+!
+! Basic system settings
+clock timezone {{ timezone | default('UTC') }} {{ timezone_offset | default('0') }} {{ timezone_offset_minutes | default('0') }}
+!
+! DNS configuration
+ip domain-name {{ domain_name }}
+{% for dns_server in dns_servers %}
+ip name-server {{ dns_server }}
+{% endfor %}
+!
+! NTP configuration
+{% for ntp_server in ntp_servers %}
+ntp server {{ ntp_server }}
+{% endfor %}
+!
+! Logging configuration
+logging buffered 16384 informational
+logging console critical
+logging host {{ syslog_server }}
+logging trap informational
+logging facility local7
+service timestamps log datetime msec localtime show-timezone
+!
+! SNMP configuration
+snmp-server community {{ snmp_ro_community | default('public') }} RO
+snmp-server community {{ snmp_rw_community | default('private') }} RW
+snmp-server host {{ snmp_server }} version 2c {{ snmp_ro_community | default('public') }}
+snmp-server enable traps
+!
+! SSH configuration
+ip ssh version 2
+crypto key generate rsa modulus 2048
+!
+line con 0
+ exec-timeout {{ console_timeout | default('5') }} 0
+ logging synchronous
+ login authentication default
+!
+line aux 0
+ exec-timeout {{ console_timeout | default('5') }} 0
+ logging synchronous
+ login authentication default
+!
+line vty 0 4
+ exec-timeout {{ vty_timeout | default('5') }} 0
+ logging synchronous
+ login authentication default
+ transport input ssh
+!
+line vty 5 15
+ exec-timeout {{ vty_timeout | default('5') }} 0
+ logging synchronous  
+ login authentication default
+ transport input ssh
+!
+
+{% else %}
+! Unknown device type - using generic configuration
+hostname {{ device_name }}
+!
+! Generic configuration for unknown device type
+! Please specify device type in device name (SPINE or LEAF)
+!
+{% endif %}
+
+! Common security settings (both NX-OS and IOS)
+! Archive configuration for rollback
+{% if 'SPINE' in device_name.upper() %}
+! NX-OS rollback configuration
+checkpoint rollback-patch file bootflash:rollback-patch
+{% else %}
+! IOS archive configuration
+archive
+ log config
+  logging enable
+  notify syslog contenttype plaintext
+ path {{ archive_path | default('flash:archive-config') }}
+ maximum 10
+ time-period 1440
+{% endif %}
+
+! End of base configuration

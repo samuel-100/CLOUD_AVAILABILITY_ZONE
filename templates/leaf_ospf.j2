@@ -1,0 +1,64 @@
+! IOS OSPF Configuration Template for LEAF devices
+! OSPF underlay routing configuration
+
+router ospf {{ ospf_process_id }}
+  router-id {{ loopback0_ip }}
+  log-adjacency-changes detail
+  auto-cost reference-bandwidth 10000
+  
+  ! Area authentication
+  area {{ ospf_area }} authentication message-digest
+  
+  ! Graceful restart (if supported)
+  {% if graceful_restart_enabled is defined and graceful_restart_enabled %}
+  nsf cisco
+  {% endif %}
+  
+  ! Passive interface default for security
+  passive-interface default
+  
+  ! Network statements for OSPF areas
+  network {{ loopback0_ip }} 0.0.0.0 area {{ ospf_area }}
+  
+  ! Uplink networks to SPINE devices
+{% for network in ospf_networks %}
+  network {{ network.address }} {{ network.wildcard }} area {{ network.area }}
+{% endfor %}
+
+  ! Active interfaces (to SPINE devices)
+{% for interface in uplink_interfaces %}
+  no passive-interface {{ interface.name }}
+{% endfor %}
+
+! Interface-specific OSPF configuration
+interface Loopback0
+  ip ospf {{ ospf_process_id }} area {{ ospf_area }}
+
+{% for interface in uplink_interfaces %}
+interface {{ interface.name }}
+  ip ospf {{ ospf_process_id }} area {{ ospf_area }}
+  ip ospf network point-to-point
+  ip ospf hello-interval 1
+  ip ospf dead-interval 3
+  ip ospf message-digest-key 1 md5 {{ ospf_auth_key }}
+  {% if bfd_enabled is defined and bfd_enabled %}
+  ip ospf bfd
+  {% endif %}
+{% endfor %}
+
+! OSPF timers optimization
+timers throttle spf 50 200 5000
+timers throttle lsa all 50 200 5000
+
+! OSPF area configuration for special requirements
+{% if stub_areas is defined %}
+{% for area in stub_areas %}
+area {{ area.id }} stub {% if area.no_summary is defined and area.no_summary %}no-summary{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if nssa_areas is defined %}
+{% for area in nssa_areas %}
+area {{ area.id }} nssa {% if area.default_information_originate is defined and area.default_information_originate %}default-information-originate{% endif %}
+{% endfor %}
+{% endif %}

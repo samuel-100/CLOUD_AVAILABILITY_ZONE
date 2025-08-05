@@ -1,0 +1,296 @@
+# Proactive Network Monitoring Configuration
+
+# Monitoring intervals (in seconds)
+monitoring_interval: 60  # How often to check network status
+escalation_check_interval: 300  # How often to check for escalations
+alert_correlation_window: 300  # Time window for correlating related alerts
+
+# Alert limits
+max_alerts_per_device: 10  # Maximum alerts per device to prevent flooding
+
+# Notification settings
+notification_settings:
+  email:
+    enabled: true
+    smtp_server: "localhost"
+    smtp_port: 587
+    username: ""
+    password: ""
+    from_address: "network-monitoring@company.com"
+    default_recipients:
+      - "admin@company.com"
+      - "netops@company.com"
+  
+  webhook:
+    enabled: false
+    url: "http://monitoring.company.com/webhook"
+    headers:
+      Authorization: "Bearer your-webhook-token"
+    timeout: 30
+  
+  slack:
+    enabled: false
+    webhook_url: ""
+    channel: "#network-alerts"
+    username: "Network Monitor"
+  
+  teams:
+    enabled: false
+    webhook_url: ""
+
+# Alert thresholds and rules
+alert_rules:
+  # CPU monitoring
+  cpu_warning:
+    enabled: true
+    metric_type: "cpu"
+    threshold_value: 75.0
+    comparison: "gt"
+    duration: 300  # 5 minutes
+    priority: "MEDIUM"
+    suppress_duration: 600  # 10 minutes
+  
+  cpu_high:
+    enabled: true
+    metric_type: "cpu"
+    threshold_value: 85.0
+    comparison: "gt"
+    duration: 180  # 3 minutes
+    priority: "HIGH"
+    suppress_duration: 300  # 5 minutes
+  
+  cpu_critical:
+    enabled: true
+    metric_type: "cpu"
+    threshold_value: 95.0
+    comparison: "gt"
+    duration: 60  # 1 minute
+    priority: "CRITICAL"
+    suppress_duration: 180  # 3 minutes
+  
+  # Memory monitoring
+  memory_warning:
+    enabled: true
+    metric_type: "memory"
+    threshold_value: 80.0
+    comparison: "gt"
+    duration: 300  # 5 minutes
+    priority: "MEDIUM"
+    suppress_duration: 600  # 10 minutes
+  
+  memory_high:
+    enabled: true
+    metric_type: "memory"
+    threshold_value: 90.0
+    comparison: "gt"
+    duration: 180  # 3 minutes
+    priority: "HIGH"
+    suppress_duration: 300  # 5 minutes
+  
+  memory_critical:
+    enabled: true
+    metric_type: "memory"
+    threshold_value: 98.0
+    comparison: "gt"
+    duration: 60  # 1 minute
+    priority: "CRITICAL"
+    suppress_duration: 180  # 3 minutes
+  
+  # Connectivity monitoring
+  device_unreachable:
+    enabled: true
+    metric_type: "connectivity"
+    threshold_value: 0
+    comparison: "eq"
+    duration: 120  # 2 minutes
+    priority: "CRITICAL"
+    suppress_duration: 300  # 5 minutes
+  
+  # Interface monitoring
+  interface_down:
+    enabled: true
+    metric_type: "interface"
+    threshold_value: 0
+    comparison: "eq"
+    duration: 60  # 1 minute
+    priority: "HIGH"
+    suppress_duration: 300  # 5 minutes
+    interface_filter: "Ethernet|GigabitEthernet|TenGigabitEthernet"  # Only critical interfaces
+  
+  # Protocol monitoring
+  bgp_neighbor_down:
+    enabled: true
+    metric_type: "protocol"
+    protocol_type: "bgp"
+    threshold_value: 0
+    comparison: "eq"
+    duration: 120  # 2 minutes
+    priority: "HIGH"
+    suppress_duration: 300  # 5 minutes
+  
+  ospf_neighbor_down:
+    enabled: true
+    metric_type: "protocol"
+    protocol_type: "ospf"
+    threshold_value: 0
+    comparison: "eq"
+    duration: 120  # 2 minutes
+    priority: "HIGH"
+    suppress_duration: 300  # 5 minutes
+
+# Escalation rules
+escalation_rules:
+  EMERGENCY:
+    escalation_delay: 60  # 1 minute
+    max_escalations: 4
+    auto_resolve: false
+    escalation_levels:
+      - level: 1
+        delay: 60
+        notifications:
+          - type: "email"
+            targets: ["admin@company.com", "oncall@company.com"]
+          - type: "webhook"
+            targets: ["http://monitoring.company.com/webhook"]
+      - level: 2
+        delay: 300  # 5 minutes
+        notifications:
+          - type: "email"
+            targets: ["manager@company.com", "director@company.com"]
+      - level: 3
+        delay: 600  # 10 minutes
+        notifications:
+          - type: "email"
+            targets: ["cto@company.com"]
+      - level: 4
+        delay: 1800  # 30 minutes
+        notifications:
+          - type: "email"
+            targets: ["ceo@company.com"]
+  
+  CRITICAL:
+    escalation_delay: 300  # 5 minutes
+    max_escalations: 3
+    auto_resolve: false
+    resolve_timeout: 7200  # 2 hours
+    escalation_levels:
+      - level: 1
+        delay: 300
+        notifications:
+          - type: "email"
+            targets: ["admin@company.com"]
+          - type: "webhook"
+            targets: ["http://monitoring.company.com/webhook"]
+      - level: 2
+        delay: 900  # 15 minutes
+        notifications:
+          - type: "email"
+            targets: ["manager@company.com", "oncall@company.com"]
+      - level: 3
+        delay: 1800  # 30 minutes
+        notifications:
+          - type: "email"
+            targets: ["director@company.com"]
+  
+  HIGH:
+    escalation_delay: 900  # 15 minutes
+    max_escalations: 2
+    auto_resolve: true
+    resolve_timeout: 3600  # 1 hour
+    escalation_levels:
+      - level: 1
+        delay: 900
+        notifications:
+          - type: "email"
+            targets: ["admin@company.com"]
+      - level: 2
+        delay: 1800  # 30 minutes
+        notifications:
+          - type: "email"
+            targets: ["manager@company.com"]
+  
+  MEDIUM:
+    escalation_delay: 1800  # 30 minutes
+    max_escalations: 1
+    auto_resolve: true
+    resolve_timeout: 7200  # 2 hours
+    escalation_levels:
+      - level: 1
+        delay: 1800
+        notifications:
+          - type: "email"
+            targets: ["admin@company.com"]
+  
+  LOW:
+    escalation_delay: 3600  # 1 hour
+    max_escalations: 1
+    auto_resolve: true
+    resolve_timeout: 14400  # 4 hours
+    escalation_levels:
+      - level: 1
+        delay: 3600
+        notifications:
+          - type: "email"
+            targets: ["admin@company.com"]
+
+# Anomaly detection settings
+anomaly_detection:
+  enabled: true
+  threshold_multiplier: 2.0  # Standard deviations from baseline
+  minimum_samples: 20  # Minimum data points for baseline
+  learning_period: 7  # Days to establish baseline
+  
+# Maintenance windows (alerts suppressed during these times)
+maintenance_windows:
+  # Example maintenance window - Sunday 2-4 AM
+  - name: "Weekly Maintenance"
+    enabled: true
+    day_of_week: 0  # Sunday (0-6, Monday=0)
+    start_time: "02:00"
+    end_time: "04:00"
+    timezone: "UTC"
+    
+# Device-specific overrides
+device_overrides:
+  # Example: Different thresholds for core devices
+  SPINE1:
+    cpu_critical: 90.0
+    memory_critical: 95.0
+  SPINE2:
+    cpu_critical: 90.0
+    memory_critical: 95.0
+  
+# Correlation rules
+correlation_rules:
+  # Group alerts that occur within the same time window
+  time_based:
+    enabled: true
+    window_seconds: 300
+    
+  # Group alerts from the same device
+  device_based:
+    enabled: true
+    max_alerts_per_group: 5
+    
+  # Group alerts with similar root causes
+  causality_based:
+    enabled: true
+    correlation_patterns:
+      - pattern: "device_unreachable"
+        suppress_related: ["interface_down", "protocol_down"]
+      - pattern: "power_failure"
+        suppress_related: ["device_unreachable", "interface_down"]
+
+# Logging configuration
+logging:
+  level: "INFO"
+  file_rotation: true
+  max_file_size: "100MB"
+  backup_count: 5
+  
+# Performance settings
+performance:
+  max_concurrent_checks: 10
+  check_timeout: 30
+  cache_ttl: 300
+  batch_size: 50

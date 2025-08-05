@@ -1,0 +1,61 @@
+! IOS BGP Configuration Template for LEAF devices
+! BGP client configuration for EVPN overlay
+
+router bgp {{ bgp_asn }}
+  bgp router-id {{ loopback0_ip }}
+  bgp log-neighbor-changes
+  bgp bestpath as-path multipath-relax
+  
+  ! BGP neighbors (SPINE route reflectors)
+{% for spine in spine_devices %}
+  neighbor {{ spine.loopback0_ip }} remote-as {{ bgp_asn }}
+  neighbor {{ spine.loopback0_ip }} description {{ spine.hostname }}
+  neighbor {{ spine.loopback0_ip }} update-source Loopback0
+  neighbor {{ spine.loopback0_ip }} timers 3 9
+{% endfor %}
+
+  ! Address family for IPv4 unicast
+  address-family ipv4
+    ! Advertise loopback network
+    network {{ loopback0_ip }} mask 255.255.255.255
+    
+    ! Activate spine neighbors
+{% for spine in spine_devices %}
+    neighbor {{ spine.loopback0_ip }} activate
+{% endfor %}
+    
+    ! Disable auto-summary for precise control
+    no auto-summary
+    no synchronization
+    
+    ! Maximum paths for load balancing
+    maximum-paths 4
+    maximum-paths ibgp 4
+  exit-address-family
+
+{% if evpn_enabled is defined and evpn_enabled %}
+  ! Address family for L2VPN EVPN (if supported)
+  address-family l2vpn evpn
+{% for spine in spine_devices %}
+    neighbor {{ spine.loopback0_ip }} activate
+    neighbor {{ spine.loopback0_ip }} send-community extended
+{% endfor %}
+  exit-address-family
+{% endif %}
+
+! Route-map for BGP (if needed)
+{% if route_maps is defined %}
+{% for route_map in route_maps %}
+route-map {{ route_map.name }} {{ route_map.action }} {{ route_map.sequence }}
+{% for statement in route_map.statements %}
+  {{ statement }}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+! Prefix-lists for route filtering
+{% if prefix_lists is defined %}
+{% for prefix_list in prefix_lists %}
+ip prefix-list {{ prefix_list.name }} seq {{ prefix_list.sequence }} {{ prefix_list.action }} {{ prefix_list.network }}
+{% endfor %}
+{% endif %}

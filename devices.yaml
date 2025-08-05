@@ -1,0 +1,26 @@
+
+devices:
+  - name: SPINE1
+    mgmt_ip: 192.168.100.11
+    username: admin
+    password: cisco123
+  - name: SPINE2
+    mgmt_ip: 192.168.100.10
+    username: admin
+    password: Cisco123
+  - name: LEAF1
+    mgmt_ip: 192.168.100.12
+    username: admin
+    password: cisco123
+  - name: LEAF2
+    mgmt_ip: 192.168.100.13
+    username: admin
+    password: cisco123
+  - name: LEAF3
+    mgmt_ip: 192.168.100.14
+    username: admin
+    password: cisco123
+  - name: LEAF4
+    mgmt_ip: 192.168.100.15
+    username: admin
+    password: cisco123

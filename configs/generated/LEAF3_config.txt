@@ -1,0 +1,139 @@
+hostname LEAF3
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+
+configure terminal
+hostname LEAF3
+
+! VLANs
+
+vlan 100
+ name Web-Servers
+
+vlan 200
+ name App-Servers
+
+vlan 300
+ name DB-Servers
+
+
+! Uplinks and access ports
+
+interface ethernet1/1
+
+
+
+
+
+
+ no switchport
+ ip address 10.100.100.10/30
+ no shutdown
+
+interface ethernet1/2
+
+
+
+
+
+
+ no switchport
+ ip address 10.100.100.26/30
+ no shutdown
+
+interface GigabitEthernet0/0
+
+ switchport
+
+
+
+
+ no switchport
+ ip address 10.1.5.1/24
+ no shutdown
+
+interface GigabitEthernet1/0
+
+ switchport
+
+
+
+
+ no switchport
+ ip address 10.1.6.1/24
+ no shutdown
+
+interface loopback0
+
+
+
+
+
+
+ no switchport
+ ip address 13.13.13.13/32
+ no shutdown
+
+
+! Interface ranges
+
+interface range GigabitEthernet1/3 - 7
+ switchport
+ switchport access vlan 100
+ spanning-tree portfast
+ shutdown
+
+
+! Spanning Tree
+spanning-tree mode rapid-pvst
+spanning-tree vlan 100,200,300 priority 32768
+
+! Management interface
+interface mgmt0
+ ip address 192.168.100.14/24
+ no shutdown
+
+! SSH and user config
+ip domain-name lab.local
+username admin privilege 15 secret cisco123
+crypto key generate rsa modulus 1024
+ip ssh version 2
+line vty 0 15
+ transport input ssh
+ login local
+ exec-timeout 5 0
+
+! OSPF
+router ospf 1
+ router-id 13.13.13.13
+
+ network 10.100.100.10 0.0.0.3 area 0
+
+ network 10.100.100.26 0.0.0.3 area 0
+
+
+! BGP
+router bgp 65000
+ bgp router-id 13.13.13.13
+ bgp log-neighbor-changes
+
+ neighbor 1.1.1.1 remote-as 65000
+
+ neighbor 2.2.2.2 remote-as 65000
+
+ address-family ipv4
+
+  neighbor 1.1.1.1 activate
+
+  neighbor 2.2.2.2 activate
+
+
+
+! Static routes
+
+ip route 0.0.0.0 0.0.0.0 10.100.100.10
+
+
+exit
+write memory

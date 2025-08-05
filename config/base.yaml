@@ -1,0 +1,105 @@
+# Base Configuration for Network Automation System
+# This file contains default settings that apply to all environments
+
+# API Configuration
+api:
+  host: "0.0.0.0"
+  port: 8080
+  workers: 4
+  timeout: 30
+  cors:
+    enabled: true
+    origins: ["*"]
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 60
+
+# MCP Server Configuration
+mcp:
+  host: "localhost"
+  port: 3000
+  transport: "stdio"
+  capabilities:
+    - "network_topology"
+    - "device_config"
+    - "monitoring"
+    - "deployment"
+
+# Monitoring Configuration
+monitoring:
+  prometheus:
+    enabled: true
+    port: 8000
+    metrics_path: "/metrics"
+  health_checks:
+    enabled: true
+    port: 8080
+    endpoint: "/health"
+    interval: 30
+  logging:
+    level: "INFO"
+    format: "structured"
+    correlation_id: true
+  tracing:
+    enabled: true
+    service_name: "network-automation"
+
+# Database Configuration
+database:
+  type: "sqlite"
+  path: "data/network_automation.db"
+  pool_size: 10
+  timeout: 30
+
+# Network Configuration
+network:
+  device_timeout: 30
+  connection_retry: 3
+  concurrent_connections: 10
+  protocols:
+    - "ssh"
+    - "netconf"
+    - "restconf"
+
+# Backup Configuration
+backup:
+  enabled: true
+  retention_days: 30
+  storage_path: "backups"
+  schedule: "0 2 * * *"  # Daily at 2 AM
+
+# Security Configuration
+security:
+  encryption:
+    enabled: true
+    algorithm: "AES-256"
+  authentication:
+    enabled: true
+    method: "token"
+    expiry: 3600
+  authorization:
+    enabled: true
+    rbac: true
+
+# Template Configuration
+templates:
+  path: "templates"
+  cache_enabled: true
+  validation: true
+
+# Deployment Configuration
+deployment:
+  max_replicas: 3
+  min_replicas: 1
+  update_strategy: "RollingUpdate"
+  health_check_path: "/health"
+  readiness_probe_delay: 10
+  liveness_probe_delay: 30
+
+# Feature Flags
+features:
+  ai_integration: true
+  auto_remediation: false
+  advanced_analytics: true
+  config_validation: true
+  workflow_automation: true

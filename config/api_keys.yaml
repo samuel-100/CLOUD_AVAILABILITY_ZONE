@@ -1,0 +1,25 @@
+api_keys:
+- active: true
+  created_at: '2025-08-04T13:49:23.343459'
+  expires_at: null
+  key_hash: 9543afc18d6bac93f82bf75a9b986e4e5894e4c9d05b7b6b34082612fd0c6757
+  key_id: client-test-client-1754315363
+  last_used: null
+  name: Client API Key - test-client
+  permissions:
+  - execute_command
+  - read_status
+  usage_count: 0
+  user: system
+- active: true
+  created_at: '2025-08-04T14:39:29.510151'
+  expires_at: null
+  key_hash: 73dfee1737e88e086245eb3feba9ad596a009e971fb7bc0d3c436e4d4a135b2a
+  key_id: client-test-client-1754318369
+  last_used: null
+  name: Client API Key - test-client
+  permissions:
+  - execute_command
+  - read_status
+  usage_count: 0
+  user: system

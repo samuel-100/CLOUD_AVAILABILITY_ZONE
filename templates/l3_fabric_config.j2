@@ -1,0 +1,215 @@
+! Device-Aware L3 Fabric Configuration Template
+! Automatically selects NX-OS or IOS L3 fabric configuration based on device name
+! Device: {{ device_name }}
+
+{% if 'SPINE' in device_name.upper() %}
+! NX-OS L3 Fabric Configuration (SPINE)
+feature bgp
+feature ospf
+feature pim
+feature interface-vlan
+feature vn-segment-vlan-based
+feature nv overlay
+feature ngoam
+
+nv overlay evpn
+
+! PIM configuration for multicast (BUM traffic)
+ip pim rp-address {{ pim_rp_address }} group-list {{ pim_group_list }}
+ip pim ssm range {{ pim_ssm_range }}
+
+{% for interface in spine_interfaces %}
+interface {{ interface.name }}
+  ip pim sparse-mode
+{% endfor %}
+
+interface loopback0
+  ip pim sparse-mode
+
+interface loopback1
+  ip pim sparse-mode
+
+fabric forwarding anycast-gateway-mac {{ anycast_gateway_mac }}
+
+evpn
+  vni {{ l3vni_base }} l3
+    rd auto
+    route-target import auto
+    route-target export auto
+
+vlan {{ l3vni_vlan }}
+  name L3VNI-TENANT-A
+  vn-segment {{ l3vni_base }}
+
+interface vlan{{ l3vni_vlan }}
+  description L3VNI for Tenant A
+  no shutdown
+  vrf member {{ tenant_vrf }}
+  ip forward
+
+vrf context {{ tenant_vrf }}
+  vni {{ l3vni_base }}
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+
+router bgp {{ bgp_asn }}
+  vrf {{ tenant_vrf }}
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+      redistribute direct route-map DIRECT-TO-BGP
+
+route-map DIRECT-TO-BGP permit 10
+  match interface loopback0
+
+{% for l2vni in l2vnis | default([]) %}
+vlan {{ l2vni.vlan_id }}
+  name {{ l2vni.name }}
+  vn-segment {{ l2vni.vni_id }}
+
+evpn
+  vni {{ l2vni.vni_id }} l2
+    rd auto
+    route-target import auto
+    route-target export auto
+{% endfor %}
+
+interface nve1
+  no shutdown
+  source-interface loopback1
+  member vni {{ l3vni_base }}
+    associate-vrf
+  {% for l2vni in l2vnis | default([]) %}
+  member vni {{ l2vni.vni_id }}
+    multicast-group {{ l2vni.multicast_group }}
+  {% endfor %}
+
+{% elif 'LEAF' in device_name.upper() %}
+! IOS L3 Fabric Configuration (LEAF)
+ip routing
+ipv6 unicast-routing
+
+{% for vrf in vrfs | default([]) %}
+vrf definition {{ vrf.name }}
+  rd {{ vrf.rd }}
+  !
+  address-family ipv4
+    route-target export {{ vrf.rt_export }}
+    route-target import {{ vrf.rt_import }}
+  exit-address-family
+  !
+  address-family ipv6
+    route-target export {{ vrf.rt_export }}
+    route-target import {{ vrf.rt_import }}
+  exit-address-family
+!
+{% endfor %}
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+  name {{ vlan.name }}
+!
+{% endfor %}
+
+{% for svi in svi_interfaces %}
+interface Vlan{{ svi.vlan_id }}
+  description {{ svi.description }}
+  {% if svi.vrf is defined %}
+  vrf forwarding {{ svi.vrf }}
+  {% endif %}
+  ip address {{ svi.ip_address }} {{ svi.subnet_mask }}
+  
+  {% if svi.anycast_gateway is defined %}
+  ip virtual-router address {{ svi.anycast_gateway }}
+  {% endif %}
+  
+  {% if svi.hsrp is defined %}
+  standby {{ svi.hsrp.group }} ip {{ svi.hsrp.virtual_ip }}
+  standby {{ svi.hsrp.group }} priority {{ svi.hsrp.priority | default(100) }}
+  standby {{ svi.hsrp.group }} preempt
+  standby {{ svi.hsrp.group }} authentication md5 key-string {{ svi.hsrp.auth_key }}
+  {% endif %}
+  
+  {% for helper in svi.dhcp_helpers | default([]) %}
+  ip helper-address {{ helper }}
+  {% endfor %}
+  
+  no shutdown
+!
+{% endfor %}
+
+interface Loopback0
+  description Router ID / Fabric ID
+  ip address {{ loopback0_ip }} 255.255.255.255
+!
+
+{% if vtep_loopback is defined %}
+interface Loopback1
+  description VTEP Source Interface (if VXLAN supported)
+  ip address {{ vtep_loopback }} 255.255.255.255
+!
+{% endif %}
+
+router bgp {{ bgp_asn }}
+  bgp router-id {{ loopback0_ip }}
+  bgp log-neighbor-changes
+  
+  address-family ipv4
+    network {{ loopback0_ip }} mask 255.255.255.255
+    {% if vtep_loopback is defined %}
+    network {{ vtep_loopback }} mask 255.255.255.255
+    {% endif %}
+    no auto-summary
+  exit-address-family
+  
+  {% for vrf in vrfs | default([]) %}
+  address-family ipv4 vrf {{ vrf.name }}
+    redistribute connected
+    redistribute static
+  exit-address-family
+  {% endfor %}
+  
+  {% for spine in spine_devices %}
+  neighbor {{ spine.loopback0_ip }} remote-as {{ bgp_asn }}
+  neighbor {{ spine.loopback0_ip }} description {{ spine.hostname }}
+  neighbor {{ spine.loopback0_ip }} update-source Loopback0
+  neighbor {{ spine.loopback0_ip }} activate
+  {% endfor %}
+
+{% for dhcp_pool in dhcp_pools | default([]) %}
+ip dhcp pool {{ dhcp_pool.name }}
+  {% if dhcp_pool.vrf is defined %}
+  vrf {{ dhcp_pool.vrf }}
+  {% endif %}
+  network {{ dhcp_pool.network }} {{ dhcp_pool.mask }}
+  default-router {{ dhcp_pool.gateway }}
+  dns-server {{ dhcp_pool.dns_server }}
+  lease {{ dhcp_pool.lease_days | default(1) }} {{ dhcp_pool.lease_hours | default(0) }} {{ dhcp_pool.lease_minutes | default(0) }}
+!
+{% endfor %}
+
+{% else %}
+! Generic L3 Fabric Configuration (Unknown device type)
+ip routing
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+  name {{ vlan.name }}
+!
+{% endfor %}
+
+interface Loopback0
+  description Router ID
+  ip address {{ loopback0_ip }} 255.255.255.255
+!
+
+router bgp {{ bgp_asn }}
+  bgp router-id {{ loopback0_ip }}
+  bgp log-neighbor-changes
+  
+  address-family ipv4
+    network {{ loopback0_ip }} mask 255.255.255.255
+    no auto-summary
+  exit-address-family
+{% endif %}

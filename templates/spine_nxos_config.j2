@@ -1,0 +1,129 @@
+! NX-OS Configuration Template for SPINE devices
+! Device: {{ device_name }}
+! Role: Spine (NX-OS)
+! Generated: {{ ansible_date_time.iso8601 }}
+
+! Enable necessary features for NX-OS
+feature bgp
+feature ospf
+feature interface-vlan
+feature hsrp
+feature vpc
+feature nv overlay
+feature vn-segment-vlan-based
+
+! Basic system configuration
+hostname {{ device_name }}
+vdc {{ device_name }} id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 248 maximum 248
+  limit-resource u6route-mem minimum 96 maximum 96
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+! Management interface
+interface mgmt0
+  description Management Interface
+  ip address {{ mgmt_ip }}/{{ mgmt_subnet }}
+  no shutdown
+
+! Management VRF
+vrf context management
+  ip route 0.0.0.0/0 {{ mgmt_gateway }}
+
+! Default VRF
+vrf context default
+
+! Loopback interfaces for BGP/OSPF
+interface loopback0
+  description Router ID / BGP Router ID
+  ip address {{ loopback0_ip }}/32
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+
+interface loopback1
+  description VTEP Source Interface
+  ip address {{ vtep_ip }}/32
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+
+! Physical interfaces to leaf switches
+{% for interface in spine_interfaces %}
+interface {{ interface.name }}
+  description {{ interface.description }}
+  no switchport
+  mtu {{ interface.mtu | default(9216) }}
+  ip address {{ interface.ip_address }}/{{ interface.subnet_mask }}
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+  no shutdown
+{% endfor %}
+
+! OSPF Configuration (Underlay)
+router ospf {{ ospf_process_id }}
+  router-id {{ loopback0_ip }}
+  area {{ ospf_area }} authentication message-digest
+  log-adjacency-changes detail
+  max-lsa 12000
+
+! BGP Configuration (Overlay)
+router bgp {{ bgp_asn }}
+  router-id {{ loopback0_ip }}
+  bestpath as-path multipath-relax
+  reconnect-interval 12
+  address-family ipv4 unicast
+    redistribute ospf {{ ospf_process_id }} route-map OSPF-TO-BGP
+    maximum-paths 8
+  address-family l2vpn evpn
+    maximum-paths 8
+    retain route-target all
+
+  ! BGP neighbors (Leaf switches)
+{% for neighbor in bgp_neighbors %}
+  neighbor {{ neighbor.ip }}
+    remote-as {{ neighbor.asn }}
+    description {{ neighbor.description }}
+    timers 3 9
+    address-family ipv4 unicast
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+{% endfor %}
+
+! EVPN/VXLAN Configuration
+nv overlay evpn
+vlan 1
+
+! Route-maps
+route-map OSPF-TO-BGP permit 10
+  match route-type internal
+route-map OSPF-TO-BGP permit 20
+  match route-type external type-1
+route-map OSPF-TO-BGP permit 30
+  match route-type external type-2
+
+! Prefix-lists for route filtering
+ip prefix-list LOOPBACKS seq 10 permit {{ loopback_prefix }}/{{ loopback_mask }} le 32
+
+! Access control
+line console
+  exec-timeout 0
+line vty
+  exec-timeout 0
+
+! NTP Configuration
+{% for ntp_server in ntp_servers %}
+ntp server {{ ntp_server }}
+{% endfor %}
+
+! Logging configuration
+logging server {{ syslog_server }}
+logging level bgp 6
+logging level ospf 6
+
+! SNMP configuration
+snmp-server community {{ snmp_community }} ro
+snmp-server host {{ snmp_server }} traps version 2c {{ snmp_community }}
+
+! Save configuration
+copy running-config startup-config

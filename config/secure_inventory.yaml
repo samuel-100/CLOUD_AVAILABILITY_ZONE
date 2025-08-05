@@ -1,0 +1,90 @@
+# Network Infrastructure Security Configuration
+# This file demonstrates how actual network credentials should be handled securely
+
+# IMPORTANT: This file contains actual network credentials and should be:
+# 1. Encrypted at rest
+# 2. Access-controlled (only authorized personnel)
+# 3. Backed up securely
+# 4. Audited for access
+# 5. Rotated regularly
+
+network_inventory:
+  spine_devices:
+    SPINE1:
+      ip_address: "192.168.100.11"
+      management_ip: "192.168.100.11"
+      username: "admin"
+      # Password should be encrypted/hashed in production
+      password_hash: "[ENCRYPTED:cisco123]"  # Actual: cisco123
+      device_type: "spine"
+      vendor: "cisco"
+      model: "nexus"
+      
+    SPINE2:
+      ip_address: "192.168.100.10" 
+      management_ip: "192.168.100.10"
+      username: "admin"
+      # Note: Different password case sensitivity
+      password_hash: "[ENCRYPTED:Cisco123]"  # Actual: Cisco123
+      device_type: "spine"
+      vendor: "cisco"
+      model: "nexus"
+  
+  leaf_devices:
+    LEAF1:
+      ip_address: "192.168.100.12"
+      management_ip: "192.168.100.12"
+      username: "admin"
+      password_hash: "[ENCRYPTED:cisco123]"  # Actual: cisco123
+      device_type: "leaf"
+      vendor: "cisco"
+      model: "nexus"
+      
+    LEAF2:
+      ip_address: "192.168.100.13"
+      management_ip: "192.168.100.13" 
+      username: "admin"
+      password_hash: "[ENCRYPTED:cisco123]"  # Actual: cisco123
+      device_type: "leaf"
+      vendor: "cisco"
+      model: "nexus"
+      
+    LEAF3:
+      ip_address: "192.168.100.14"
+      management_ip: "192.168.100.14"
+      username: "admin"
+      password_hash: "[ENCRYPTED:cisco123]"  # Actual: cisco123
+      device_type: "leaf"
+      vendor: "cisco"
+      model: "nexus"
+      
+    LEAF4:
+      ip_address: "192.168.100.15"
+      management_ip: "192.168.100.15"
+      username: "admin"
+      password_hash: "[ENCRYPTED:cisco123]"  # Actual: cisco123
+      device_type: "leaf"
+      vendor: "cisco"
+      model: "nexus"
+
+# Network Ranges
+network_ranges:
+  management_network: "192.168.100.0/24"
+  spine_range: "192.168.100.10-11"
+  leaf_range: "192.168.100.12-15"
+
+# Security Notes:
+# - All passwords should be rotated regularly
+# - Default credentials should be changed immediately
+# - Enable TACACS+ or RADIUS for centralized authentication
+# - Use certificate-based authentication where possible
+# - Implement proper role-based access control (RBAC)
+# - Monitor all administrative access
+# - Use encrypted management channels (SSH, HTTPS)
+
+# Data Protection Rules Applied:
+# 1. IP addresses will be masked in logs/outputs
+# 2. Passwords will be redacted in any exported data  
+# 3. This file should be encrypted when stored
+# 4. Access to this file should be audited
+# 5. Retention policies apply to credential history

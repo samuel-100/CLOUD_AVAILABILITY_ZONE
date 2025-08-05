@@ -1,0 +1,180 @@
+! IOS L3 Fabric Configuration Template for LEAF devices
+! L3 fabric edge configuration with basic EVPN support (if available)
+
+! Global L3 fabric settings
+ip routing
+ipv6 unicast-routing
+
+! VRF definitions for multi-tenancy
+{% for vrf in vrfs | default([]) %}
+vrf definition {{ vrf.name }}
+  rd {{ vrf.rd }}
+  !
+  address-family ipv4
+    route-target export {{ vrf.rt_export }}
+    route-target import {{ vrf.rt_import }}
+  exit-address-family
+  !
+  address-family ipv6
+    route-target export {{ vrf.rt_export }}
+    route-target import {{ vrf.rt_import }}
+  exit-address-family
+!
+{% endfor %}
+
+! VLAN to VNI mapping (if VXLAN is supported)
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+  name {{ vlan.name }}
+  {% if vlan.vni is defined %}
+  ! VNI mapping for VXLAN (if supported by platform)
+  ! vn-segment {{ vlan.vni }}
+  {% endif %}
+!
+{% endfor %}
+
+! SVI interfaces for tenant VLANs
+{% for svi in svi_interfaces %}
+interface Vlan{{ svi.vlan_id }}
+  description {{ svi.description }}
+  {% if svi.vrf is defined %}
+  vrf forwarding {{ svi.vrf }}
+  {% endif %}
+  ip address {{ svi.ip_address }} {{ svi.subnet_mask }}
+  
+  ! Anycast gateway configuration (if supported)
+  {% if svi.anycast_gateway is defined %}
+  ip virtual-router address {{ svi.anycast_gateway }}
+  {% endif %}
+  
+  ! HSRP for redundancy
+  {% if svi.hsrp is defined %}
+  standby {{ svi.hsrp.group }} ip {{ svi.hsrp.virtual_ip }}
+  standby {{ svi.hsrp.group }} priority {{ svi.hsrp.priority | default(100) }}
+  standby {{ svi.hsrp.group }} preempt
+  standby {{ svi.hsrp.group }} authentication md5 key-string {{ svi.hsrp.auth_key }}
+  {% endif %}
+  
+  ! DHCP helper addresses
+  {% for helper in svi.dhcp_helpers | default([]) %}
+  ip helper-address {{ helper }}
+  {% endfor %}
+  
+  no shutdown
+!
+{% endfor %}
+
+! Loopback interfaces for fabric
+interface Loopback0
+  description Router ID / Fabric ID
+  ip address {{ loopback0_ip }} 255.255.255.255
+!
+
+{% if vtep_loopback is defined %}
+interface Loopback1
+  description VTEP Source Interface (if VXLAN supported)
+  ip address {{ vtep_loopback }} 255.255.255.255
+!
+{% endif %}
+
+! BGP configuration for fabric participation
+router bgp {{ bgp_asn }}
+  bgp router-id {{ loopback0_ip }}
+  bgp log-neighbor-changes
+  
+  ! Default address family
+  address-family ipv4
+    network {{ loopback0_ip }} mask 255.255.255.255
+    {% if vtep_loopback is defined %}
+    network {{ vtep_loopback }} mask 255.255.255.255
+    {% endif %}
+    no auto-summary
+  exit-address-family
+  
+  ! VRF address families
+  {% for vrf in vrfs | default([]) %}
+  address-family ipv4 vrf {{ vrf.name }}
+    redistribute connected
+    redistribute static
+  exit-address-family
+  {% endfor %}
+  
+  ! BGP neighbors to spine route reflectors
+  {% for spine in spine_devices %}
+  neighbor {{ spine.loopback0_ip }} remote-as {{ bgp_asn }}
+  neighbor {{ spine.loopback0_ip }} description {{ spine.hostname }}
+  neighbor {{ spine.loopback0_ip }} update-source Loopback0
+  neighbor {{ spine.loopback0_ip }} activate
+  {% endfor %}
+
+! DHCP pools for local VLANs
+{% for dhcp_pool in dhcp_pools | default([]) %}
+ip dhcp pool {{ dhcp_pool.name }}
+  {% if dhcp_pool.vrf is defined %}
+  vrf {{ dhcp_pool.vrf }}
+  {% endif %}
+  network {{ dhcp_pool.network }} {{ dhcp_pool.mask }}
+  default-router {{ dhcp_pool.gateway }}
+  dns-server {{ dhcp_pool.dns_server }}
+  lease {{ dhcp_pool.lease_days | default(1) }} {{ dhcp_pool.lease_hours | default(0) }} {{ dhcp_pool.lease_minutes | default(0) }}
+!
+{% endfor %}
+
+! Access control for tenant separation
+{% for acl in access_lists | default([]) %}
+ip access-list extended {{ acl.name }}
+  {% for rule in acl.rules %}
+  {{ rule }}
+  {% endfor %}
+!
+{% endfor %}
+
+! Route maps for traffic engineering
+{% for route_map in route_maps | default([]) %}
+route-map {{ route_map.name }} {{ route_map.action }} {{ route_map.sequence }}
+  {% for match in route_map.match_statements | default([]) %}
+  {{ match }}
+  {% endfor %}
+  {% for set in route_map.set_statements | default([]) %}
+  {{ set }}
+  {% endfor %}
+!
+{% endfor %}
+
+! Static routes for external connectivity (if edge leaf)
+{% for route in static_routes | default([]) %}
+ip route {% if route.vrf is defined %}vrf {{ route.vrf }} {% endif %}{{ route.network }} {{ route.mask }} {{ route.next_hop }}
+{% endfor %}
+
+! Multicast configuration (if required)
+{% if multicast_enabled is defined and multicast_enabled %}
+ip multicast-routing
+{% for vrf in vrfs | default([]) %}
+ip multicast-routing vrf {{ vrf.name }}
+{% endfor %}
+
+! PIM configuration on interfaces
+{% for interface in uplink_interfaces %}
+interface {{ interface.name }}
+  ip pim sparse-mode
+{% endfor %}
+
+interface Loopback0
+  ip pim sparse-mode
+{% endif %}
+
+! Quality of Service (QoS) configuration
+{% if qos_policies is defined %}
+{% for policy in qos_policies %}
+class-map {{ policy.class_name }}
+  {% for match in policy.match_statements %}
+  {{ match }}
+  {% endfor %}
+
+policy-map {{ policy.policy_name }}
+  class {{ policy.class_name }}
+    {% for action in policy.actions %}
+    {{ action }}
+    {% endfor %}
+{% endfor %}
+{% endif %}

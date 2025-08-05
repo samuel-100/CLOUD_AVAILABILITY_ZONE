@@ -1,0 +1,12 @@
+{
+  "deployments": [
+    {
+      "deployment_id": "DEP-20250804-141846",
+      "request_description": "Configure loopback0 interface with IP address 10.1.1.1/32 for LEAF1",
+      "target_devices": [
+        "LEAF1"
+      ],
+      "generated_config": {
+        "LEAF1": "! General configuration for LEAF1\n! Generated from: Configure loopback0 interface with IP address 10.1.1.1/32 for LEAF1\n!\nhostname LEAF1\n!"
+      },
+      "sensitivity_level": 

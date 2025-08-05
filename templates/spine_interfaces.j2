@@ -1,0 +1,86 @@
+! NX-OS Interface Configuration Template for SPINE devices
+! Physical interfaces connecting to LEAF switches
+
+{% for interface in spine_interfaces %}
+interface {{ interface.name }}
+  description {{ interface.description | default('Connection to ' + interface.remote_device) }}
+  no switchport
+  mtu {{ interface.mtu | default(9216) }}
+  
+  ! IP configuration
+  ip address {{ interface.ip_address }}/{{ interface.prefix_length }}
+  
+  ! OSPF configuration
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area | default('0.0.0.0') }}
+  ip ospf network point-to-point
+  ip ospf hello-interval {{ interface.ospf_hello | default(1) }}
+  ip ospf dead-interval {{ interface.ospf_dead | default(3) }}
+  {% if ospf_auth_enabled is defined and ospf_auth_enabled %}
+  ip ospf message-digest-key 1 md5 {{ ospf_auth_key }}
+  {% endif %}
+  
+  ! BFD configuration (if enabled)
+  {% if bfd_enabled is defined and bfd_enabled %}
+  ip ospf bfd
+  {% endif %}
+  
+  ! QoS configuration (if specified)
+  {% if interface.qos_policy is defined %}
+  service-policy input {{ interface.qos_policy.input }}
+  service-policy output {{ interface.qos_policy.output }}
+  {% endif %}
+  
+  ! Storm control (if specified)
+  {% if interface.storm_control is defined %}
+  storm-control broadcast level {{ interface.storm_control.broadcast | default('1.00') }}
+  storm-control multicast level {{ interface.storm_control.multicast | default('1.00') }}
+  storm-control unicast level {{ interface.storm_control.unicast | default('1.00') }}
+  {% endif %}
+  
+  ! Interface optimization
+  no ip redirects
+  no ip unreachables
+  no ip proxy-arp
+  
+  ! Bring interface up
+  no shutdown
+
+{% endfor %}
+
+! Loopback interfaces
+interface loopback0
+  description Router ID / BGP Router ID
+  ip address {{ loopback0_ip }}/32
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area | default('0.0.0.0') }}
+
+interface loopback1
+  description VTEP Source Interface  
+  ip address {{ vtep_ip }}/32
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area | default('0.0.0.0') }}
+
+! Management interface
+interface mgmt0
+  description Management Interface
+  vrf member management
+  ip address {{ mgmt_ip }}/{{ mgmt_prefix_length }}
+  no shutdown
+
+! Port-channel interfaces (if link aggregation is used)
+{% for pc in port_channels | default([]) %}
+interface port-channel{{ pc.id }}
+  description {{ pc.description }}
+  no switchport
+  mtu {{ pc.mtu | default(9216) }}
+  ip address {{ pc.ip_address }}/{{ pc.prefix_length }}
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area | default('0.0.0.0') }}
+  ip ospf network point-to-point
+  no shutdown
+
+{% for member in pc.members %}
+interface {{ member }}
+  description Member of Port-Channel{{ pc.id }}
+  no switchport
+  channel-group {{ pc.id }} mode active
+  no shutdown
+{% endfor %}
+{% endfor %}

@@ -1,0 +1,218 @@
+! IOS Configuration Template for LEAF devices
+! Device: {{ device_name }}
+! Role: Leaf (IOS)
+! Generated: {{ ansible_date_time.iso8601 }}
+
+! Basic system configuration
+hostname {{ device_name }}
+!
+enable secret {{ enable_secret }}
+!
+aaa new-model
+aaa authentication login default local
+!
+username {{ admin_user }} privilege 15 secret {{ admin_password }}
+!
+ip domain-name {{ domain_name }}
+ip name-server {{ dns_server }}
+!
+! Global settings
+ip routing
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+!
+
+! VLAN Configuration
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+ name {{ vlan.name }}
+{% endfor %}
+
+! Loopback interfaces
+interface Loopback0
+ description Router ID / OSPF Router ID
+ ip address {{ loopback0_ip }} {{ loopback0_mask }}
+ ip ospf {{ ospf_process_id }} area {{ ospf_area }}
+!
+
+! Management interface
+interface {{ mgmt_interface }}
+ description Management Interface
+ ip address {{ mgmt_ip }} {{ mgmt_subnet_mask }}
+ no shutdown
+!
+
+! Physical interfaces to spine switches
+{% for interface in uplink_interfaces %}
+interface {{ interface.name }}
+ description {{ interface.description }}
+ no switchport
+ ip address {{ interface.ip_address }} {{ interface.subnet_mask }}
+ ip ospf {{ ospf_process_id }} area {{ ospf_area }}
+ ip ospf network point-to-point
+ no shutdown
+!
+{% endfor %}
+
+! Access interfaces (to servers/hosts)
+{% for interface in access_interfaces %}
+interface {{ interface.name }}
+ description {{ interface.description }}
+ switchport mode access
+ switchport access vlan {{ interface.vlan }}
+ spanning-tree portfast
+ no shutdown
+!
+{% endfor %}
+
+! Trunk interfaces (to other switches)
+{% for interface in trunk_interfaces %}
+interface {{ interface.name }}
+ description {{ interface.description }}
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan {{ interface.allowed_vlans }}
+ no shutdown
+!
+{% endfor %}
+
+! VLAN interfaces (SVIs)
+{% for svi in svi_interfaces %}
+interface Vlan{{ svi.vlan_id }}
+ description {{ svi.description }}
+ ip address {{ svi.ip_address }} {{ svi.subnet_mask }}
+ {% if svi.hsrp_group is defined %}
+ standby {{ svi.hsrp_group }} ip {{ svi.hsrp_vip }}
+ standby {{ svi.hsrp_group }} priority {{ svi.hsrp_priority | default(100) }}
+ standby {{ svi.hsrp_group }} preempt
+ {% endif %}
+ no shutdown
+!
+{% endfor %}
+
+! OSPF Configuration (Underlay routing)
+router ospf {{ ospf_process_id }}
+ router-id {{ loopback0_ip }}
+ area {{ ospf_area }} authentication message-digest
+ log-adjacency-changes detail
+ auto-cost reference-bandwidth 10000
+ passive-interface default
+ {% for interface in uplink_interfaces %}
+ no passive-interface {{ interface.name }}
+ {% endfor %}
+ network {{ loopback0_ip }} 0.0.0.0 area {{ ospf_area }}
+ {% for network in ospf_networks %}
+ network {{ network.address }} {{ network.wildcard }} area {{ network.area }}
+ {% endfor %}
+!
+
+! BGP Configuration (if required for EVPN)
+{% if bgp_asn is defined %}
+router bgp {{ bgp_asn }}
+ bgp router-id {{ loopback0_ip }}
+ bgp log-neighbor-changes
+ {% for neighbor in bgp_neighbors %}
+ neighbor {{ neighbor.ip }} remote-as {{ neighbor.asn }}
+ neighbor {{ neighbor.ip }} description {{ neighbor.description }}
+ neighbor {{ neighbor.ip }} timers 3 9
+ !
+ address-family ipv4
+  network {{ loopback0_ip }} mask 255.255.255.255
+  neighbor {{ neighbor.ip }} activate
+  no auto-summary
+ exit-address-family
+ {% endfor %}
+!
+{% endif %}
+
+! Access Control Lists
+{% for acl in access_lists %}
+ip access-list extended {{ acl.name }}
+ {% for rule in acl.rules %}
+ {{ rule }}
+ {% endfor %}
+!
+{% endfor %}
+
+! Route maps
+{% for route_map in route_maps %}
+route-map {{ route_map.name }} {{ route_map.action }} {{ route_map.sequence }}
+ {% for match in route_map.match_statements %}
+ {{ match }}
+ {% endfor %}
+ {% for set in route_map.set_statements %}
+ {{ set }}
+ {% endfor %}
+!
+{% endfor %}
+
+! DHCP Configuration (if leaf provides DHCP)
+{% for dhcp_pool in dhcp_pools %}
+ip dhcp pool {{ dhcp_pool.name }}
+ network {{ dhcp_pool.network }} {{ dhcp_pool.mask }}
+ default-router {{ dhcp_pool.gateway }}
+ dns-server {{ dhcp_pool.dns_server }}
+ lease {{ dhcp_pool.lease_days | default(1) }} {{ dhcp_pool.lease_hours | default(0) }} {{ dhcp_pool.lease_minutes | default(0) }}
+!
+{% endfor %}
+
+! Default route (if edge leaf)
+{% if default_route is defined %}
+ip route 0.0.0.0 0.0.0.0 {{ default_route.next_hop }}
+{% endif %}
+
+! Management and monitoring
+! NTP Configuration
+{% for ntp_server in ntp_servers %}
+ntp server {{ ntp_server }}
+{% endfor %}
+
+! Logging
+logging buffered 4096 informational
+logging console critical
+{% if syslog_server is defined %}
+logging host {{ syslog_server }}
+{% endif %}
+
+! SNMP Configuration
+{% if snmp_community is defined %}
+snmp-server community {{ snmp_community }} RO
+{% endif %}
+{% if snmp_server is defined %}
+snmp-server host {{ snmp_server }} version 2c {{ snmp_community }}
+{% endif %}
+
+! SSH Configuration
+ip ssh version 2
+crypto key generate rsa modulus 2048
+!
+line con 0
+ exec-timeout 5 0
+ logging synchronous
+ login authentication default
+!
+line aux 0
+ exec-timeout 5 0
+ logging synchronous
+ login authentication default
+!
+line vty 0 4
+ exec-timeout 5 0
+ logging synchronous
+ login authentication default
+ transport input ssh
+!
+line vty 5 15
+ exec-timeout 5 0
+ logging synchronous
+ login authentication default
+ transport input ssh
+!
+
+! Save configuration
+end
+write memory

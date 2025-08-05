@@ -1,0 +1,114 @@
+! NX-OS L3 Fabric Configuration Template for SPINE devices
+! Complete L3 fabric underlay and overlay configuration
+
+! Enable required features
+feature bgp
+feature ospf
+feature pim
+feature interface-vlan
+feature vn-segment-vlan-based
+feature nv overlay
+feature ngoam
+
+! NV overlay global configuration
+nv overlay evpn
+
+! PIM configuration for multicast (BUM traffic)
+ip pim rp-address {{ pim_rp_address }} group-list {{ pim_group_list }}
+ip pim ssm range {{ pim_ssm_range }}
+
+{% for interface in spine_interfaces %}
+interface {{ interface.name }}
+  ip pim sparse-mode
+{% endfor %}
+
+interface loopback0
+  ip pim sparse-mode
+
+interface loopback1
+  ip pim sparse-mode
+
+! Anycast Gateway MAC (if using distributed anycast gateway)
+fabric forwarding anycast-gateway-mac {{ anycast_gateway_mac }}
+
+! EVPN configuration
+evpn
+  vni {{ l3vni_base }} l3
+    rd auto
+    route-target import auto
+    route-target export auto
+
+! L3VNI VLAN configuration
+vlan {{ l3vni_vlan }}
+  name L3VNI-TENANT-A
+  vn-segment {{ l3vni_base }}
+
+! L3VNI SVI configuration
+interface vlan{{ l3vni_vlan }}
+  description L3VNI for Tenant A
+  no shutdown
+  vrf member {{ tenant_vrf }}
+  ip forward
+
+! VRF configuration for tenant
+vrf context {{ tenant_vrf }}
+  vni {{ l3vni_base }}
+  rd auto
+  address-family ipv4 unicast
+    route-target both auto
+    route-target both auto evpn
+
+! BGP EVPN configuration for L3VNI
+router bgp {{ bgp_asn }}
+  vrf {{ tenant_vrf }}
+    address-family ipv4 unicast
+      advertise l2vpn evpn
+      redistribute direct route-map DIRECT-TO-BGP
+
+! Route-map for VRF route redistribution
+route-map DIRECT-TO-BGP permit 10
+  match interface loopback0
+
+! L2VNI configurations (for stretched VLANs)
+{% for l2vni in l2vnis | default([]) %}
+vlan {{ l2vni.vlan_id }}
+  name {{ l2vni.name }}
+  vn-segment {{ l2vni.vni_id }}
+
+evpn
+  vni {{ l2vni.vni_id }} l2
+    rd auto
+    route-target import auto
+    route-target export auto
+{% endfor %}
+
+! NVE interface configuration (VTEP)
+interface nve1
+  no shutdown
+  source-interface loopback1
+  member vni {{ l3vni_base }}
+    associate-vrf
+  {% for l2vni in l2vnis | default([]) %}
+  member vni {{ l2vni.vni_id }}
+    multicast-group {{ l2vni.multicast_group }}
+  {% endfor %}
+
+! Multicast configuration for BUM traffic
+interface loopback2
+  description PIM Anycast RP
+  ip address {{ pim_anycast_rp }}/32
+  ip router ospf {{ ospf_process_id }} area {{ ospf_area }}
+  ip pim sparse-mode
+
+! PIM Anycast RP configuration
+ip pim anycast-rp {{ pim_anycast_rp }} {{ spine1_loopback }}
+ip pim anycast-rp {{ pim_anycast_rp }} {{ spine2_loopback }}
+
+! Fabric load balancing
+port-channel load-balance src-dst ip-l4port-vlan
+
+! Hardware optimization for VXLAN
+hardware access-list tcam region ing-racl 0
+hardware access-list tcam region ing-pacl 0  
+hardware access-list tcam region ing-qos 256
+hardware access-list tcam region ing-l4port 0

@@ -1,0 +1,55 @@
+! NX-OS BGP Configuration Template for SPINE devices
+! BGP Route Reflector configuration for EVPN overlay
+
+router bgp {{ bgp_asn }}
+  router-id {{ loopback0_ip }}
+  bestpath as-path multipath-relax
+  reconnect-interval 12
+  log-neighbor-changes
+  
+  ! Address family for IPv4 unicast (underlay reachability)
+  address-family ipv4 unicast
+    redistribute ospf {{ ospf_process_id }} route-map OSPF-TO-BGP
+    maximum-paths 8
+    maximum-paths ibgp 8
+  
+  ! Address family for L2VPN EVPN (overlay)
+  address-family l2vpn evpn
+    maximum-paths 8
+    maximum-paths ibgp 8
+    retain route-target all
+  
+  ! Template for LEAF peers
+  template peer LEAF-PEERS
+    remote-as {{ bgp_asn }}
+    update-source loopback0
+    timers 3 9
+    address-family ipv4 unicast
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+  
+  ! BGP neighbors (LEAF switches)
+{% for leaf in leaf_devices %}
+  neighbor {{ leaf.loopback0_ip }}
+    description {{ leaf.hostname }}
+    inherit peer LEAF-PEERS
+{% endfor %}
+
+! Route-map for redistributing OSPF into BGP
+route-map OSPF-TO-BGP permit 10
+  description Redistribute OSPF loopbacks
+  match route-type internal
+  match ip address prefix-list LOOPBACKS
+  
+route-map OSPF-TO-BGP permit 20
+  description Redistribute OSPF external type-1
+  match route-type external type-1
+  
+route-map OSPF-TO-BGP permit 30
+  description Redistribute OSPF external type-2  
+  match route-type external type-2
+
+! Prefix-list for loopback networks
+ip prefix-list LOOPBACKS seq 10 permit {{ loopback_range }}/{{ loopback_mask }} le 32

@@ -1,0 +1,41 @@
+validation_rules:
+- config_types:
+  - interface
+  description: Ensure interfaces are properly enabled with 'no shutdown'
+  name: Interface Shutdown Check
+  pattern: interface\s+\w+.*?(?=interface|\Z)
+  recommendation: Add 'no shutdown' command to enable the interface
+  rule_id: NO_SHUTDOWN_CHECK
+  severity: warning
+- config_types:
+  - interface
+  description: Validate IP address format and subnet mask
+  name: IP Address Format Validation
+  pattern: ip address (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})
+  recommendation: Use valid IP address and subnet mask format
+  rule_id: IP_ADDRESS_FORMAT
+  severity: error
+- config_types:
+  - vlan
+  description: Ensure VLAN IDs are within valid range (1-4094)
+  name: VLAN Range Validation
+  pattern: vlan (\d+)
+  recommendation: Use VLAN IDs between 1 and 4094
+  rule_id: VLAN_RANGE_CHECK
+  severity: error
+- config_types:
+  - routing
+  description: Validate OSPF area format
+  name: OSPF Area Format Check
+  pattern: network .* area (\d+|\d+\.\d+\.\d+\.\d+)
+  recommendation: Use standard OSPF area format (0 or dotted decimal)
+  rule_id: OSPF_AREA_FORMAT
+  severity: warning
+- config_types:
+  - routing
+  description: Validate BGP AS number range
+  name: BGP AS Number Validation
+  pattern: router bgp (\d+)
+  recommendation: Use valid BGP AS number (1-65535 for 2-byte, 1-4294967295 for 4-byte)
+  rule_id: BGP_AS_RANGE
+  severity: error

@@ -1,0 +1,157 @@
+! IOS Interface Configuration Template for LEAF devices
+! Interface configuration for access, trunk, and uplink interfaces
+
+! Loopback interfaces
+interface Loopback0
+  description Router ID / OSPF Router ID
+  ip address {{ loopback0_ip }} {{ loopback0_mask | default('255.255.255.255') }}
+  ip ospf {{ ospf_process_id }} area {{ ospf_area | default('0') }}
+!
+
+! Uplink interfaces to SPINE devices (Layer 3)
+{% for interface in uplink_interfaces %}
+interface {{ interface.name }}
+  description {{ interface.description | default('Uplink to ' + interface.remote_device) }}
+  no switchport
+  ip address {{ interface.ip_address }} {{ interface.subnet_mask }}
+  
+  ! OSPF configuration
+  ip ospf {{ ospf_process_id }} area {{ ospf_area | default('0') }}
+  ip ospf network point-to-point
+  ip ospf hello-interval {{ interface.ospf_hello | default(1) }}
+  ip ospf dead-interval {{ interface.ospf_dead | default(3) }}
+  {% if ospf_auth_enabled is defined and ospf_auth_enabled %}
+  ip ospf message-digest-key 1 md5 {{ ospf_auth_key }}
+  {% endif %}
+  
+  ! Interface optimization
+  no ip redirects
+  no ip unreachables
+  no ip proxy-arp
+  
+  ! Bring interface up
+  no shutdown
+!
+{% endfor %}
+
+! Access interfaces (to servers/hosts)
+{% for interface in access_interfaces | default([]) %}
+interface {{ interface.name }}
+  description {{ interface.description | default('Access port') }}
+  switchport mode access
+  switchport access vlan {{ interface.vlan }}
+  
+  ! Security features
+  {% if interface.port_security is defined and interface.port_security %}
+  switchport port-security
+  switchport port-security maximum {{ interface.port_security_max | default(2) }}
+  switchport port-security violation {{ interface.port_security_violation | default('shutdown') }}
+  switchport port-security aging time {{ interface.port_security_aging | default(60) }}
+  {% endif %}
+  
+  ! Storm control
+  {% if interface.storm_control is defined %}
+  storm-control broadcast level {{ interface.storm_control.broadcast | default('1.00') }}
+  storm-control multicast level {{ interface.storm_control.multicast | default('1.00') }}
+  {% endif %}
+  
+  ! STP optimization for access ports
+  spanning-tree portfast
+  spanning-tree bpduguard enable
+  
+  no shutdown
+!
+{% endfor %}
+
+! Trunk interfaces (to other switches or APs)
+{% for interface in trunk_interfaces | default([]) %}
+interface {{ interface.name }}
+  description {{ interface.description | default('Trunk port') }}
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+  
+  ! VLAN configuration
+  {% if interface.allowed_vlans is defined %}
+  switchport trunk allowed vlan {{ interface.allowed_vlans }}
+  {% else %}
+  switchport trunk allowed vlan all
+  {% endif %}
+  
+  {% if interface.native_vlan is defined %}
+  switchport trunk native vlan {{ interface.native_vlan }}
+  {% endif %}
+  
+  ! STP configuration for trunks
+  {% if interface.stp_guard is defined %}
+  spanning-tree guard {{ interface.stp_guard }}
+  {% endif %}
+  
+  no shutdown
+!
+{% endfor %}
+
+! VLAN interfaces (SVIs) for inter-VLAN routing
+{% for svi in svi_interfaces | default([]) %}
+interface Vlan{{ svi.vlan_id }}
+  description {{ svi.description | default('VLAN ' + svi.vlan_id|string + ' Gateway') }}
+  ip address {{ svi.ip_address }} {{ svi.subnet_mask }}
+  
+  ! HSRP configuration for redundancy
+  {% if svi.hsrp is defined %}
+  standby {{ svi.hsrp.group }} ip {{ svi.hsrp.virtual_ip }}
+  standby {{ svi.hsrp.group }} priority {{ svi.hsrp.priority | default(100) }}
+  standby {{ svi.hsrp.group }} preempt
+  standby {{ svi.hsrp.group }} authentication md5 key-string {{ svi.hsrp.auth_key }}
+  {% endif %}
+  
+  ! DHCP helper addresses
+  {% for helper in svi.dhcp_helpers | default([]) %}
+  ip helper-address {{ helper }}
+  {% endfor %}
+  
+  ! Access control
+  {% if svi.access_group is defined %}
+  ip access-group {{ svi.access_group.in }} in
+  ip access-group {{ svi.access_group.out }} out
+  {% endif %}
+  
+  no shutdown
+!
+{% endfor %}
+
+! Management interface
+interface {{ mgmt_interface | default('Vlan1') }}
+  description Management Interface
+  ip address {{ mgmt_ip }} {{ mgmt_subnet_mask }}
+  no shutdown
+!
+
+! EtherChannel/Port-Channel interfaces (if link aggregation is used)
+{% for pc in port_channels | default([]) %}
+interface Port-channel{{ pc.id }}
+  description {{ pc.description }}
+  
+  {% if pc.type == 'access' %}
+  switchport mode access
+  switchport access vlan {{ pc.vlan }}
+  {% elif pc.type == 'trunk' %}
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+  switchport trunk allowed vlan {{ pc.allowed_vlans | default('all') }}
+  {% elif pc.type == 'routed' %}
+  no switchport
+  ip address {{ pc.ip_address }} {{ pc.subnet_mask }}
+  {% endif %}
+  
+  no shutdown
+!
+
+{% for member in pc.members %}
+interface {{ member }}
+  description Member of Port-Channel{{ pc.id }}
+  channel-protocol lacp
+  channel-group {{ pc.id }} mode active
+  no shutdown
+!
+{% endfor %}
+{% endfor %}

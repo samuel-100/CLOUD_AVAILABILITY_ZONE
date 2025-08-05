@@ -1,0 +1,357 @@
+# Data Protection and Filtering Configuration
+
+# Encryption settings
+encryption:
+  enabled: true
+  algorithm: "fernet"  # fernet, aes256
+  key_rotation_days: 90
+  secure_key_storage: true
+
+# Data filtering settings
+filtering:
+  enabled: true
+  strict_mode: false  # If true, blocks unknown sensitive patterns
+  log_filtered_data: true
+  context_analysis: true
+  real_time_filtering: true
+
+# Data retention settings
+retention:
+  enabled: true
+  default_retention_days: 365
+  automatic_cleanup: true
+  backup_before_delete: true
+  archive_encryption: true
+
+# Privacy controls
+privacy:
+  gdpr_compliance: true
+  ccpa_compliance: true
+  hipaa_compliance: false
+  pci_compliance: false
+  data_subject_rights: true
+  consent_tracking: true
+  purpose_limitation: true
+  data_minimization: true
+
+# Audit and compliance
+audit:
+  log_all_access: true
+  log_data_exports: true
+  log_deletions: true
+  log_filtering_actions: true
+  alert_on_violations: true
+  compliance_reporting: true
+
+# Sensitive data categories and rules
+filter_rules:
+  # Network infrastructure
+  ip_addresses:
+    private_ips:
+      enabled: true
+      sensitivity: "confidential"
+      action: "mask"
+      pattern: '\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b'
+      replacement: "[PRIVATE_IP]"
+      context_aware: true
+    
+    public_ips:
+      enabled: true
+      sensitivity: "restricted"
+      action: "redact"
+      pattern: '\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+      replacement: "[PUBLIC_IP]"
+      context_aware: true
+      whitelist_patterns:
+        - "127\\.0\\.0\\.1"  # localhost
+        - "0\\.0\\.0\\.0"    # default route
+  
+  # Hardware identifiers
+  mac_addresses:
+    enabled: true
+    sensitivity: "confidential"
+    action: "mask"
+    pattern: '\b[0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}[:-][0-9a-fA-F]{2}\b'
+    replacement: "[MAC_ADDRESS]"
+  
+  serial_numbers:
+    enabled: true
+    sensitivity: "confidential"
+    action: "mask"
+    pattern: '(?i)(?:serial|s/n|sn)\s*[:=]\s*[A-Z0-9]{8,}'
+    replacement: "[SERIAL_NUMBER]"
+  
+  # Authentication and credentials
+  passwords:
+    enabled: true
+    sensitivity: "top_secret"
+    action: "redact"
+    pattern: '(?i)(?:password|passwd|pwd|secret)\s*[:=]\s*\S+'
+    replacement: "[PASSWORD_REDACTED]"
+  
+  api_keys:
+    enabled: true
+    sensitivity: "top_secret"
+    action: "redact"
+    pattern: '(?i)(?:api[_-]?key|token|bearer)\s*[:=]\s*[a-zA-Z0-9+/=]{20,}'
+    replacement: "[API_KEY_REDACTED]"
+  
+  snmp_community:
+    enabled: true
+    sensitivity: "restricted"
+    action: "redact"
+    pattern: '(?i)(?:community|snmp[-_]?string)\s*[:=]\s*\S+'
+    replacement: "[SNMP_COMMUNITY_REDACTED]"
+  
+  # Cryptographic material
+  certificates:
+    enabled: true
+    sensitivity: "restricted"
+    action: "redact"
+    pattern: '-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----'
+    replacement: "[CERTIFICATE_REDACTED]"
+  
+  private_keys:
+    enabled: true
+    sensitivity: "top_secret"
+    action: "remove"
+    pattern: '-----BEGIN (?:RSA )?PRIVATE KEY-----.*?-----END (?:RSA )?PRIVATE KEY-----'
+    replacement: ""
+  
+  # Network configuration
+  vlan_info:
+    enabled: false  # Usually safe to share
+    sensitivity: "internal"
+    action: "allow"
+    pattern: '(?i)vlan\s+\d+'
+  
+  bgp_asn:
+    enabled: false  # Usually public information
+    sensitivity: "internal"
+    action: "allow"
+    pattern: '(?i)as\s+\d+'
+  
+  # Personal and financial data
+  email_addresses:
+    enabled: true
+    sensitivity: "confidential"
+    action: "mask"
+    pattern: '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    replacement: "[EMAIL_ADDRESS]"
+  
+  phone_numbers:
+    enabled: true
+    sensitivity: "confidential"
+    action: "mask"
+    pattern: '(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}'
+    replacement: "[PHONE_NUMBER]"
+  
+  credit_cards:
+    enabled: true
+    sensitivity: "restricted"
+    action: "redact"
+    pattern: '\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b'
+    replacement: "[CREDIT_CARD_REDACTED]"
+
+# Data retention policies
+retention_policies:
+  logs_standard:
+    name: "Standard Log Retention"
+    description: "Standard retention for operational logs"
+    data_types:
+      - "audit_logs"
+      - "application_logs"
+      - "access_logs"
+      - "monitoring_logs"
+    retention_period_days: 365
+    archive_before_delete: true
+    encryption_required: true
+    compliance_tags:
+      - "SOX"
+      - "GDPR"
+      - "ISO27001"
+  
+  config_backups:
+    name: "Configuration Backup Retention"
+    description: "Extended retention for device configuration backups"
+    data_types:
+      - "device_configs"
+      - "config_backups"
+      - "config_templates"
+    retention_period_days: 1095  # 3 years
+    archive_before_delete: true
+    encryption_required: true
+    compliance_tags:
+      - "SOX"
+      - "HIPAA"
+      - "PCI"
+  
+  monitoring_data:
+    name: "Monitoring Data Retention"
+    description: "Retention for monitoring and performance data"
+    data_types:
+      - "metrics"
+      - "alerts"
+      - "performance_data"
+      - "network_status"
+    retention_period_days: 730  # 2 years
+    archive_before_delete: false
+    encryption_required: false
+    compliance_tags:
+      - "GDPR"
+  
+  security_logs:
+    name: "Security Log Retention"
+    description: "Extended retention for security-related logs"
+    data_types:
+      - "security_logs"
+      - "auth_logs"
+      - "incident_logs"
+      - "vulnerability_scans"
+    retention_period_days: 2555  # 7 years
+    archive_before_delete: true
+    encryption_required: true
+    compliance_tags:
+      - "SOX"
+      - "PCI"
+      - "GDPR"
+      - "HIPAA"
+      - "ISO27001"
+  
+  user_data:
+    name: "User Data Retention"
+    description: "Personal data retention policy"
+    data_types:
+      - "user_profiles"
+      - "personal_data"
+      - "contact_information"
+    retention_period_days: 1095  # 3 years
+    archive_before_delete: true
+    encryption_required: true
+    compliance_tags:
+      - "GDPR"
+      - "CCPA"
+
+# Privacy controls
+privacy_controls:
+  gdpr_compliance:
+    name: "GDPR Compliance Control"
+    description: "Controls for General Data Protection Regulation compliance"
+    data_subject_rights:
+      - "access"
+      - "rectification"
+      - "erasure"
+      - "portability"
+      - "restriction"
+      - "objection"
+    consent_required: true
+    purpose_limitation: true
+    data_minimization: true
+    lawful_basis_required: true
+    
+  ccpa_compliance:
+    name: "CCPA Compliance Control"
+    description: "Controls for California Consumer Privacy Act compliance"
+    data_subject_rights:
+      - "access"
+      - "deletion"
+      - "opt_out"
+      - "non_discrimination"
+    consent_required: false
+    purpose_limitation: true
+    data_minimization: true
+    
+  hipaa_compliance:
+    name: "HIPAA Compliance Control"
+    description: "Controls for Health Insurance Portability and Accountability Act"
+    data_subject_rights:
+      - "access"
+      - "amendment"
+      - "accounting"
+      - "restriction"
+    consent_required: true
+    purpose_limitation: true
+    data_minimization: true
+    safeguards_required: true
+
+# Context-aware filtering rules
+context_rules:
+  claude_responses:
+    description: "Filtering for Claude AI responses"
+    apply_strict_filtering: true
+    allowed_categories:
+      - "network_topology"  # Allow general topology info
+      - "device_status"     # Allow status information
+      - "general_metrics"   # Allow non-sensitive metrics
+    blocked_categories:
+      - "passwords"
+      - "api_keys"
+      - "private_keys"
+      - "certificates"
+      - "snmp_community"
+      - "serial_numbers"
+  
+  config_generation:
+    description: "Filtering for configuration generation"
+    apply_strict_filtering: false
+    preserve_functionality: true
+    mask_sensitive_values: true
+  
+  monitoring_reports:
+    description: "Filtering for monitoring reports"
+    apply_strict_filtering: false
+    mask_private_ips: true
+    allow_public_info: true
+  
+  security_audit:
+    description: "Filtering for security audits"
+    apply_strict_filtering: true
+    log_all_access: true
+    require_authorization: true
+
+# Export validation rules
+export_validation:
+  allowed_purposes:
+    - "legal_compliance"
+    - "data_subject_request"
+    - "legitimate_interest"
+    - "consent"
+    - "contract_performance"
+    - "vital_interests"
+  
+  approval_required:
+    - "top_secret"
+    - "restricted"
+  
+  automatic_approval:
+    - "public"
+    - "internal"
+
+# Notification settings for violations
+notifications:
+  email:
+    enabled: true
+    recipients:
+      - "security@company.com"
+      - "compliance@company.com"
+    smtp_server: "localhost"
+    smtp_port: 587
+  
+  webhook:
+    enabled: false
+    url: "https://security.company.com/violations"
+    headers:
+      Authorization: "Bearer security-webhook-token"
+  
+  siem_integration:
+    enabled: false
+    syslog_server: "siem.company.com"
+    syslog_port: 514
+
+# Performance tuning
+performance:
+  enable_caching: true
+  cache_timeout: 300  # seconds
+  max_cache_size: 1000  # entries
+  parallel_processing: true
+  max_workers: 4

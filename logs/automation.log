@@ -1,0 +1,340 @@
+2025-07-24 11:29:50,396 - WARNING - No inventory file found. Run discovery first.
+2025-07-30 02:19:57,134 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:19:57,135 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:19:57,135 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:19:57,135 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:19:57,136 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:19:57,136 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:19:58,160 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:19:58,165 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:19:58,167 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:19:58,168 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:19:58,394 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:19:58,471 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:19:58,526 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:19:58,540 INFO Authentication (password) successful!
+2025-07-30 02:19:58,547 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:19:58,547 INFO Authentication (password) successful!
+2025-07-30 02:19:58,558 INFO Authentication (password) successful!
+2025-07-30 02:19:58,610 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:19:58,610 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:19:58,623 INFO Authentication (password) successful!
+2025-07-30 02:19:58,625 INFO Authentication (password) successful!
+2025-07-30 02:19:58,657 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:19:58,657 INFO Authentication (password) successful!
+2025-07-30 02:26:51,190 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:26:51,190 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:26:51,190 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:26:51,191 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:26:51,191 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:26:51,191 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:26:52,219 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:26:52,221 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:26:52,225 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:26:52,233 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:26:52,466 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:26:52,466 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:26:52,615 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:26:52,626 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:26:52,627 INFO Authentication (password) successful!
+2025-07-30 02:26:52,640 INFO Authentication (password) successful!
+2025-07-30 02:26:52,657 INFO Authentication (password) successful!
+2025-07-30 02:26:52,682 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:26:52,695 INFO Authentication (password) successful!
+2025-07-30 02:26:52,701 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:26:52,701 INFO Authentication (password) successful!
+2025-07-30 02:26:52,706 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:26:52,706 INFO Authentication (password) successful!
+2025-07-30 02:28:31,284 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:28:31,284 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:28:31,284 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:28:31,285 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:28:31,285 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:28:31,285 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:28:32,309 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:28:32,310 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:28:32,311 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:28:32,312 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:28:32,523 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:28:32,530 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:28:32,682 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:28:32,691 INFO Authentication (password) successful!
+2025-07-30 02:28:32,696 INFO Authentication (password) successful!
+2025-07-30 02:28:32,698 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:28:32,698 INFO Authentication (password) successful!
+2025-07-30 02:28:32,711 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:28:32,712 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:28:32,712 INFO Authentication (password) successful!
+2025-07-30 02:28:32,724 INFO Authentication (password) successful!
+2025-07-30 02:28:32,831 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:28:32,844 INFO Authentication (password) successful!
+2025-07-30 02:29:42,009 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:29:42,009 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:29:42,009 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:29:42,010 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:29:42,010 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:29:42,010 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:29:43,036 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:29:43,037 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:29:43,038 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:29:43,038 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:29:43,258 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:29:43,260 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:29:43,394 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:29:43,405 INFO Authentication (password) successful!
+2025-07-30 02:29:43,414 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:29:43,414 INFO Authentication (password) successful!
+2025-07-30 02:29:43,422 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:29:43,422 INFO Authentication (password) successful!
+2025-07-30 02:29:43,447 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:29:43,460 INFO Authentication (password) successful!
+2025-07-30 02:29:43,476 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:29:43,484 INFO Authentication (password) successful!
+2025-07-30 02:29:43,489 INFO Authentication (password) successful!
+2025-07-30 02:39:34,412 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:39:34,413 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:39:34,413 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:39:34,413 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:39:34,414 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:39:34,414 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:39:35,442 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:39:35,446 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:39:35,447 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:39:35,448 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:39:35,676 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:39:35,680 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:39:35,812 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:39:35,826 INFO Authentication (password) successful!
+2025-07-30 02:39:35,834 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:39:35,834 INFO Authentication (password) successful!
+2025-07-30 02:39:35,845 INFO Authentication (password) successful!
+2025-07-30 02:39:35,865 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:39:35,866 INFO Authentication (password) successful!
+2025-07-30 02:39:35,895 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:39:35,904 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:39:35,911 INFO Authentication (password) successful!
+2025-07-30 02:39:35,918 INFO Authentication (password) successful!
+2025-07-30 02:45:24,987 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:45:24,988 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:45:24,988 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:45:24,988 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:45:24,989 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:45:24,989 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:45:26,014 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:45:26,017 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:45:26,018 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:45:26,020 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:45:26,275 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:45:26,279 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:45:26,376 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:45:26,394 INFO Authentication (password) successful!
+2025-07-30 02:45:26,445 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:45:26,457 INFO Authentication (password) successful!
+2025-07-30 02:45:26,501 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:45:26,502 INFO Authentication (password) successful!
+2025-07-30 02:45:26,516 INFO Authentication (password) successful!
+2025-07-30 02:45:26,528 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:45:26,528 INFO Authentication (password) successful!
+2025-07-30 02:45:26,546 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:45:26,547 INFO Authentication (password) successful!
+2025-07-30 02:46:39,078 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:46:39,078 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:46:39,078 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:46:39,079 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:46:39,079 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:46:39,079 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:46:40,105 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:46:40,110 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:46:40,110 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:46:40,113 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:46:40,360 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:46:40,363 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:46:40,486 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:46:40,501 INFO Authentication (password) successful!
+2025-07-30 02:46:40,529 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:46:40,530 INFO Authentication (password) successful!
+2025-07-30 02:46:40,552 INFO Authentication (password) successful!
+2025-07-30 02:46:40,579 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:46:40,585 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:46:40,595 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:46:40,596 INFO Authentication (password) successful!
+2025-07-30 02:46:40,596 INFO Authentication (password) successful!
+2025-07-30 02:46:40,601 INFO Authentication (password) successful!
+2025-07-30 02:48:30,807 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:48:30,808 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:48:30,808 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:48:30,808 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:48:30,809 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:48:30,809 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:48:31,837 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:48:31,839 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:48:31,840 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:48:31,844 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:48:32,114 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:48:32,130 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:48:32,264 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:48:32,265 INFO Authentication (password) successful!
+2025-07-30 02:48:32,292 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:48:32,292 INFO Authentication (password) successful!
+2025-07-30 02:48:32,322 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:48:32,323 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:48:32,324 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:48:32,337 INFO Authentication (password) successful!
+2025-07-30 02:48:32,339 INFO Authentication (password) successful!
+2025-07-30 02:48:32,339 INFO Authentication (password) successful!
+2025-07-30 02:48:32,343 INFO Authentication (password) successful!
+2025-07-30 02:49:49,865 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:49:49,865 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:49:49,865 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:49:49,866 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:49:49,866 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:49:49,867 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:49:50,890 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:49:50,894 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:49:50,896 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:49:50,896 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:49:51,141 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:49:51,141 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:49:51,310 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:49:51,311 INFO Authentication (password) successful!
+2025-07-30 02:49:51,327 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:49:51,331 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:49:51,343 INFO Authentication (password) successful!
+2025-07-30 02:49:51,352 INFO Authentication (password) successful!
+2025-07-30 02:49:51,364 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:49:51,367 INFO Authentication (password) successful!
+2025-07-30 02:49:51,376 INFO Authentication (password) successful!
+2025-07-30 02:49:51,378 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:49:51,378 INFO Authentication (password) successful!
+2025-07-30 02:51:51,992 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:51:51,992 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:51:51,993 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:51:51,993 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:51:51,993 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:51:51,994 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:51:53,022 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:51:53,024 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:51:53,024 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:51:53,029 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:51:53,257 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:51:53,259 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:51:53,419 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:51:53,419 INFO Authentication (password) successful!
+2025-07-30 02:51:53,427 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:51:53,427 INFO Authentication (password) successful!
+2025-07-30 02:51:53,481 INFO Authentication (password) successful!
+2025-07-30 02:51:53,483 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:51:53,484 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:51:53,485 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:51:53,498 INFO Authentication (password) successful!
+2025-07-30 02:51:53,501 INFO Authentication (password) successful!
+2025-07-30 02:51:53,502 INFO Authentication (password) successful!
+2025-07-30 02:52:22,838 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:52:22,839 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:52:22,839 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:52:22,839 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:52:22,840 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:52:22,841 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:52:23,870 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:52:23,873 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:52:23,873 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:52:23,876 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:52:24,127 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:52:24,153 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:52:24,285 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:52:24,285 INFO Authentication (password) successful!
+2025-07-30 02:52:24,319 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:52:24,319 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:52:24,332 INFO Authentication (password) successful!
+2025-07-30 02:52:24,333 INFO Authentication (password) successful!
+2025-07-30 02:52:24,347 INFO Authentication (password) successful!
+2025-07-30 02:52:24,358 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:52:24,360 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:52:24,360 INFO Authentication (password) successful!
+2025-07-30 02:52:24,369 INFO Authentication (password) successful!
+2025-07-30 02:53:28,195 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 02:53:28,196 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 02:53:28,196 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 02:53:28,196 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 02:53:28,197 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 02:53:28,197 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 02:53:29,221 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:53:29,224 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:53:29,225 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:53:29,226 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:53:29,451 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:53:29,483 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:53:29,626 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:53:29,626 INFO Authentication (password) successful!
+2025-07-30 02:53:29,648 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:53:29,648 INFO Authentication (password) successful!
+2025-07-30 02:53:29,670 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:53:29,671 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:53:29,679 INFO Authentication (password) successful!
+2025-07-30 02:53:29,685 INFO Authentication (password) successful!
+2025-07-30 02:53:29,687 INFO Authentication (password) successful!
+2025-07-30 02:53:29,701 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:53:29,712 INFO Authentication (password) successful!
+2025-07-30 02:57:36,795 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:57:36,958 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:57:36,959 INFO Authentication (password) successful!
+2025-07-30 02:57:39,119 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 02:57:39,280 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 02:57:39,280 INFO Authentication (password) successful!
+2025-07-30 02:57:41,284 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:57:41,611 INFO Authentication (password) successful!
+2025-07-30 02:57:45,175 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:57:45,494 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:57:45,508 INFO Authentication (password) successful!
+2025-07-30 02:57:49,046 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:57:49,354 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:57:49,367 INFO Authentication (password) successful!
+2025-07-30 02:57:52,881 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 02:57:53,206 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 02:57:53,219 INFO Authentication (password) successful!
+2025-07-30 03:21:56,613 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 03:21:56,614 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 03:21:56,614 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 03:21:56,615 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 03:21:56,615 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 03:21:56,615 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 03:21:57,640 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:21:57,641 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:21:57,645 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:21:57,646 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:21:57,884 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 03:21:57,884 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 03:21:58,035 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 03:21:58,036 INFO Authentication (password) successful!
+2025-07-30 03:21:58,040 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 03:21:58,054 INFO Authentication (password) successful!
+2025-07-30 03:21:58,100 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 03:21:58,106 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 03:21:58,108 INFO Authentication (password) successful!
+2025-07-30 03:21:58,115 INFO Authentication (password) successful!
+2025-07-30 03:21:58,120 INFO Authentication (password) successful!
+2025-07-30 03:21:58,134 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 03:21:58,134 INFO Authentication (password) successful!
+2025-07-30 03:22:55,781 INFO Checking connectivity for SPINE1 (192.168.100.2)
+2025-07-30 03:22:55,781 INFO Checking connectivity for SPINE2 (192.168.100.3)
+2025-07-30 03:22:55,782 INFO Checking connectivity for LEAF1 (192.168.100.12/24)
+2025-07-30 03:22:55,782 INFO Checking connectivity for LEAF2 (192.168.100.13/24)
+2025-07-30 03:22:55,782 INFO Checking connectivity for LEAF3 (192.168.100.14/24)
+2025-07-30 03:22:55,783 INFO Checking connectivity for LEAF4 (192.168.100.15/24)
+2025-07-30 03:22:56,811 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:22:56,811 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:22:56,812 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:22:56,813 INFO Connected (version 2.0, client Cisco-1.25)
+2025-07-30 03:22:57,058 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 03:22:57,061 INFO Connected (version 2.0, client OpenSSH_9.1)
+2025-07-30 03:22:57,182 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 03:22:57,194 INFO Authentication (password) successful!
+2025-07-30 03:22:57,195 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 03:22:57,196 INFO Authentication (password) successful!
+2025-07-30 03:22:57,225 INFO Auth banner: b'User Access Verification\n'
+2025-07-30 03:22:57,225 INFO Authentication (password) successful!
+2025-07-30 03:22:57,247 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 03:22:57,252 INFO Authentication (password) successful!
+2025-07-30 03:22:57,267 INFO Authentication (password) successful!
+2025-07-30 03:22:57,280 INFO Auth banner: b'\r\nIOSv - Cisco Systems Confidential -\r\n\r\nSupplemental End User License Restrictions\r\n\r\nThis IOSv software is provided AS-IS without warranty of any kind. Under no circumstances may this software be used separate from the Cisco Modeling Labs Software that this software was provided with, or deployed or used as part of a production environment.\r\n\r\nBy using the software, you agree to abide by the terms and conditions of the Cisco End User License Agreement at http://www.cisco.com/go/eula. Unauthorized use or distribution of this software is expressly prohibited.\r\n'
+2025-07-30 03:22:57,292 INFO Authentication (password) successful!
